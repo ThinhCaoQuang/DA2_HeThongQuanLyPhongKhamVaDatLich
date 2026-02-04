@@ -154,18 +154,26 @@ CREATE TABLE lich_kham (
     ly_do_huy TEXT,
     ghi_chu TEXT,
     tao_boi INT,
+    xac_nhan_boi INT,
+    huy_boi INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    thoi_gian_xac_nhan TIMESTAMP NULL,
+    thoi_gian_huy TIMESTAMP NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (benh_nhan_id) REFERENCES benh_nhan(benh_nhan_id) ON DELETE CASCADE,
     FOREIGN KEY (bac_si_id) REFERENCES bac_si(bac_si_id),
     FOREIGN KEY (chuyen_khoa_id) REFERENCES chuyen_khoa(chuyen_khoa_id),
     FOREIGN KEY (tao_boi) REFERENCES tai_khoan(tai_khoan_id),
+    FOREIGN KEY (xac_nhan_boi) REFERENCES tai_khoan(tai_khoan_id),
+    FOREIGN KEY (huy_boi) REFERENCES tai_khoan(tai_khoan_id),
     UNIQUE KEY unique_ma_lich_kham (ma_lich_kham),
     INDEX idx_benh_nhan_id (benh_nhan_id),
     INDEX idx_bac_si_id (bac_si_id),
     INDEX idx_ngay_kham (ngay_kham),
     INDEX idx_trang_thai (trang_thai),
-    INDEX idx_chuyen_khoa_id (chuyen_khoa_id)
+    INDEX idx_chuyen_khoa_id (chuyen_khoa_id),
+    INDEX idx_created_at (created_at),
+    INDEX idx_thoi_gian_huy (thoi_gian_huy)
 );
 
 -- ============================================================
