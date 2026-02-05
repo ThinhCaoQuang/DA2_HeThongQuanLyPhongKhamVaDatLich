@@ -4,10 +4,14 @@ require('dotenv').config();
 const { sequelize } = require('./models');
 
 // Import routes
+const AuthRoutes = require('./routes/AuthRoutes');
 const BenhNhanRoutes = require('./routes/BenhNhanRoutes');
 const ChuyenKhoaRoutes = require('./routes/ChuyenKhoaRoutes');
 const BacSiRoutes = require('./routes/BacSiRoutes');
 const LichKhamRoutes = require('./routes/LichKhamRoutes');
+
+// Import middleware
+const { authenticateToken } = require('./middleware/AuthMiddleware');
 
 const app = express();
 
@@ -21,11 +25,14 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is running!' });
 });
 
-// API Routes
-app.use('/api/benhnhan', BenhNhanRoutes);
-app.use('/api/chuyenkhoa', ChuyenKhoaRoutes);
-app.use('/api/bacsi', BacSiRoutes);
-app.use('/api/lichkham', LichKhamRoutes);
+// Auth Routes (Public)
+app.use('/api/auth', AuthRoutes);
+
+// Protected Routes (Cần token)
+app.use('/api/benhnhan', authenticateToken, BenhNhanRoutes);
+app.use('/api/chuyenkhoa', authenticateToken, ChuyenKhoaRoutes);
+app.use('/api/bacsi', authenticateToken, BacSiRoutes);
+app.use('/api/lichkham', authenticateToken, LichKhamRoutes);
 
 // Sync database (tạo bảng nếu chưa có)
 sequelize.sync({ alter: false })
