@@ -4,8 +4,8 @@
 -- ============================================================
 
 -- Tạo Database
-CREATE DATABASE IF NOT EXISTS clinic_management;
-USE clinic_management;
+CREATE DATABASE IF NOT EXISTS QuanLyPhongKham;
+USE QuanLyPhongKham;
 
 -- ============================================================
 -- 1. NGUOI_DUNG (Thông tin người dùng)
@@ -273,11 +273,11 @@ INSERT INTO ChuyenKhoa (TenChuyenKhoa, MoTa) VALUES
 
 -- Insert Người dùng
 INSERT INTO NguoiDung (HoTen, GioiTinh, DienThoai, Email) VALUES
-('Quan Tri Vien', 'NAM', '0900000001', 'admin@clinic.com'),
-('Nguyen Thi Le Tan', 'NU', '0900000002', 'receptionist@clinic.com'),
-('TS. Tran Van A', 'NAM', '0900000003', 'doctor1@clinic.com'),
-('ThS. Le Thi B', 'NU', '0900000004', 'doctor2@clinic.com'),
-('TS. Pham Van C', 'NAM', '0900000005', 'doctor3@clinic.com');
+('Quan Tri Vien', 'Nam', '0900000001', 'admin@clinic.com'),
+('Nguyen Thi Le Tan', 'Nu', '0900000002', 'receptionist@clinic.com'),
+('TS. Tran Van A', 'Nam', '0900000003', 'doctor1@clinic.com'),
+('ThS. Le Thi B', 'Nu', '0900000004', 'doctor2@clinic.com'),
+('TS. Pham Van C', 'Nam', '0900000005', 'doctor3@clinic.com');
 
 -- Insert Tài khoản
 INSERT INTO TaiKhoan (NguoiDungId, TenDangNhap, MatKhauHash, VaiTro, TrangThai) VALUES
@@ -332,7 +332,7 @@ FROM BacSi bs
 JOIN NguoiDung nd ON bs.NguoiDungId = nd.NguoiDungId
 LEFT JOIN BacSiChuyenKhoa bsck ON bs.BacSiId = bsck.BacSiId
 LEFT JOIN ChuyenKhoa ck ON bsck.ChuyenKhoaId = ck.ChuyenKhoaId
-GROUP BY bs.bac_si_id;
+GROUP BY bs.BacSiId;
 
 -- View: Danh sách lịch khám chi tiết
 CREATE VIEW v_lich_kham_chi_tiet AS
@@ -367,7 +367,7 @@ SELECT
 FROM BacSi bs
 JOIN NguoiDung nd ON bs.NguoiDungId = nd.NguoiDungId
 LEFT JOIN LichKham lk ON bs.BacSiId = lk.BacSiId
-GROUP BY bs.bac_si_id;
+GROUP BY bs.BacSiId;
 
 -- ============================================================
 -- TẠO INDEXES CHO PERFORMANCE
