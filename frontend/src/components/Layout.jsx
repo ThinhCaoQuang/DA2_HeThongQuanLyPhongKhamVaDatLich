@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import '../styles/Layout.css';
@@ -6,7 +5,6 @@ import '../styles/Layout.css';
 export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -25,15 +23,9 @@ export default function Layout({ children }) {
   return (
     <div className="layout">
       {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+      <aside className="sidebar">
         <div className="sidebar-header">
           <h2>Phòng Khám</h2>
-          <button 
-            className="toggle-btn"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            {sidebarOpen ? '◀' : '▶'}
-          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -50,15 +42,13 @@ export default function Layout({ children }) {
 
         <div className="sidebar-footer">
           <div className="user-profile">
-            {sidebarOpen && (
-              <div className="user-info">
-                <p className="user-name">{user.HoTen}</p>
-                <p className="user-role">{user.VaiTro}</p>
-              </div>
-            )}
+            <div className="user-info">
+              <p className="user-name">{user.HoTen}</p>
+              <p className="user-role">{user.VaiTro}</p>
+            </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
-            {sidebarOpen && <span>Đăng Xuất</span>}
+            <span>Đăng Xuất</span>
           </button>
         </div>
       </aside>
