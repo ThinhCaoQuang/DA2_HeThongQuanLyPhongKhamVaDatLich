@@ -7,6 +7,8 @@ import '../styles/BacSi.css';
 export default function BacSi() {
   const navigate = useNavigate();
   const [doctors, setDoctors] = useState([]);
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -32,12 +34,31 @@ export default function BacSi() {
       setLoading(true);
       const response = await bacSiAPI.getAll();
       const data = response.data?.data || response.data || [];
-      setDoctors(Array.isArray(data) ? data : []);
+      const doctorsData = Array.isArray(data) ? data : [];
+      setDoctors(doctorsData);
+      setFilteredDoctors(doctorsData);
     } catch (error) {
       console.error('Lỗi tải danh sách bác sĩ:', error);
       setDoctors([]);
+      setFilteredDoctors([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+    
+    if (term === '') {
+      setFilteredDoctors(doctors);
+    } else {
+      const filtered = doctors.filter(doctor =>
+        doctor.NguoiDung?.HoTen?.toLowerCase().includes(term) ||
+        doctor.ChuyenMon?.toLowerCase().includes(term) ||
+        doctor.NguoiDung?.Email?.toLowerCase().includes(term)
+      );
+      setFilteredDoctors(filtered);
     }
   };
 
@@ -129,12 +150,21 @@ export default function BacSi() {
         <section className="content-section">
           <div className="section-header">
             <h2>Danh Sách Bác Sĩ</h2>
-            <button 
-              onClick={() => setShowForm(!showForm)} 
-              className="btn-add"
-            >
-              {showForm ? 'Đóng' : '+ Thêm Bác Sĩ'}
-            </button>
+            <div className="header-actions">
+              <input
+                type="text"
+                placeholder="🔍 Tìm kiếm bác sĩ..."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="search-input"
+              />
+              <button 
+                onClick={() => setShowForm(!showForm)} 
+                className="btn-add"
+              >
+                {showForm ? 'Đóng' : '+ Thêm Bác Sĩ'}
+              </button>
+            </div>
           </div>
 
           {showForm && (

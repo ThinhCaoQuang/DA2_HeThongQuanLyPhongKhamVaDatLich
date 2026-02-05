@@ -7,6 +7,8 @@ import '../styles/Dashboard.css';
 export default function Dashboard() {
   const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,12 +32,31 @@ export default function Dashboard() {
       setLoading(true);
       const response = await benhNhanAPI.getAll();
       const data = response.data?.data || response.data || [];
-      setPatients(Array.isArray(data) ? data : []);
+      const patientsData = Array.isArray(data) ? data : [];
+      setPatients(patientsData);
+      setFilteredPatients(patientsData);
     } catch (error) {
       console.error('Lỗi tải danh sách bệnh nhân:', error);
       setPatients([]);
+      setFilteredPatients([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+    
+    if (term === '') {
+      setFilteredPatients(patients);
+    } else {
+      const filtered = patients.filter(patient =>
+        patient.NguoiDung?.HoTen?.toLowerCase().includes(term) ||
+        patient.NguoiDung?.DienThoai?.toLowerCase().includes(term) ||
+        patient.NguoiDung?.Email?.toLowerCase().includes(term)
+      );
+      setFilteredPatients(filtered);
     }
   };
 
@@ -72,12 +93,21 @@ export default function Dashboard() {
         <section className="content-section">
           <div className="section-header">
             <h2>Danh Sách Bệnh Nhân</h2>
-            <button 
-              onClick={() => setShowForm(!showForm)} 
-              className="btn-add"
-            >
-              {showForm ? 'Đóng' : '+ Thêm Bệnh Nhân'}
-            </button>
+            <div className="header-actions">
+              <input
+                type="text"
+                placeholder="🔍 Tìm kiếm bệnh nhân..."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="search-input"
+              />
+              <button 
+                onClick={() => setShowForm(!showForm)} 
+                className="btn-add"
+              >
+                {showForm ? 'Đóng' : '+ Thêm Bệnh Nhân'}
+              </button>
+            </div>
           </div>
 
           {showForm && (
@@ -121,8 +151,8 @@ export default function Dashboard() {
 
           {loading ? (
             <p>Đang tải...</p>
-          ) : patients.length === 0 ? (
-            <p>Không có bệnh nhân nào</p>
+          ) : filteredPatients.length === 0 ? (
+            <p>{searchTerm ? 'Không tìm thấy bệnh nhân phù hợp' : 'Không có bệnh nhân nào'}</p>
           ) : (
             <table className="patients-table">
               <thead>
@@ -136,7 +166,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {patients.map((patient, index) => (
+                {filteredPatients.map((patient, index) => (
                   <tr key={patient.BenhNhanId}>
                     <td>{index + 1}</td>
                     <td>{patient.HoTen}</td>
