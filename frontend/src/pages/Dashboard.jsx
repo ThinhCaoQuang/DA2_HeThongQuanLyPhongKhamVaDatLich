@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { benhNhanAPI, authAPI } from '../services/api';
+import { benhNhanAPI } from '../services/api';
+import Layout from '../components/Layout';
 import '../styles/Dashboard.css';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,7 +22,6 @@ export default function Dashboard() {
       navigate('/login');
       return;
     }
-    setUser(JSON.parse(storedUser));
     loadPatients();
   }, []);
 
@@ -38,11 +37,6 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleLogout = () => {
-    authAPI.logout();
-    navigate('/login');
   };
 
   const handleAddPatient = async (e) => {
@@ -69,18 +63,13 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="dashboard">
-      <header className="dashboard-header">
-        <h1>Dashboard - Quản Lý Bệnh Nhân</h1>
-        <div className="user-info">
-          <span>Xin chào: {user?.HoTen}</span>
-          <button onClick={() => navigate('/bacsi')} className="btn-nav">Quản Lý Bác Sĩ</button>
-          <button onClick={handleLogout} className="btn-logout">Đăng Xuất</button>
+    <Layout>
+      <div className="page-container">
+        <div className="page-header">
+          <h1>Quản Lý Bệnh Nhân</h1>
         </div>
-      </header>
 
-      <main className="dashboard-main">
-        <section className="patients-section">
+        <section className="content-section">
           <div className="section-header">
             <h2>Danh Sách Bệnh Nhân</h2>
             <button 
@@ -168,7 +157,7 @@ export default function Dashboard() {
             </table>
           )}
         </section>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 }

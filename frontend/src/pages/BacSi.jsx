@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { bacSiAPI, authAPI } from '../services/api';
+import { bacSiAPI } from '../services/api';
+import Layout from '../components/Layout';
 import '../styles/BacSi.css';
 
 export default function BacSi() {
   const navigate = useNavigate();
   const [doctors, setDoctors] = useState([]);
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -24,7 +24,6 @@ export default function BacSi() {
       navigate('/login');
       return;
     }
-    setUser(JSON.parse(storedUser));
     loadDoctors();
   }, []);
 
@@ -117,22 +116,17 @@ export default function BacSi() {
       soDienThoai: '',
       email: '',
       chuyenMon: '',
-      kinh_nghiem: ''
     });
   };
 
   return (
-    <div className="dashboard">
-      <header className="dashboard-header">
-        <h1>Dashboard - Quản Lý Bác Sĩ</h1>
-        <div className="user-info">
-          <span>Xin chào: {user?.HoTen}</span>
-          <button onClick={handleLogout} className="btn-logout">Đăng Xuất</button>
+    <Layout>
+      <div className="page-container">
+        <div className="page-header">
+          <h1>Quản Lý Bác Sĩ</h1>
         </div>
-      </header>
 
-      <main className="dashboard-main">
-        <section className="doctors-section">
+        <section className="content-section">
           <div className="section-header">
             <h2>Danh Sách Bác Sĩ</h2>
             <button 
@@ -253,7 +247,7 @@ export default function BacSi() {
             </table>
           )}
         </section>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 }
