@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bacSiAPI } from '../services/api';
 import Layout from '../components/Layout';
+import Loading from '../components/Loading';
 import '../styles/BacSi.css';
 
 export default function BacSi() {
@@ -153,7 +154,7 @@ export default function BacSi() {
             <div className="header-actions">
               <input
                 type="text"
-                placeholder="🔍 Tìm kiếm bác sĩ..."
+                placeholder="Tìm kiếm bác sĩ..."
                 value={searchTerm}
                 onChange={handleSearch}
                 className="search-input"
@@ -232,9 +233,9 @@ export default function BacSi() {
           )}
 
           {loading ? (
-            <p>Đang tải...</p>
-          ) : doctors.length === 0 ? (
-            <p>Không có bác sĩ nào</p>
+            <Loading />
+          ) : filteredDoctors.length === 0 ? (
+            <p>{searchTerm ? 'Không tìm thấy bác sĩ phù hợp' : 'Không có bác sĩ nào'}</p>
           ) : (
             <table className="doctors-table">
               <thead>

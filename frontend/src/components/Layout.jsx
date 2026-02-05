@@ -16,10 +16,10 @@ export default function Layout({ children }) {
   };
 
   const menuItems = [
-    { path: '/dashboard', label: 'Bệnh Nhân', icon: '👥' },
-    { path: '/bacsi', label: 'Bác Sĩ', icon: '👨‍⚕️' },
-    { path: '/chuyenkhoa', label: 'Chuyên Khoa', icon: '🏥' },
-    { path: '/lichkham', label: 'Lịch Khám', icon: '📅' },
+    { path: '/dashboard', label: 'Bệnh Nhân' },
+    { path: '/bacsi', label: 'Bác Sĩ' },
+    { path: '/chuyenkhoa', label: 'Chuyên Khoa' },
+    { path: '/lichkham', label: 'Lịch Khám' },
   ];
 
   return (
@@ -27,7 +27,7 @@ export default function Layout({ children }) {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
-          <h2>🏥 Phòng Khám</h2>
+          <h2>Phòng Khám</h2>
           <button 
             className="toggle-btn"
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -43,15 +43,13 @@ export default function Layout({ children }) {
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
               onClick={() => navigate(item.path)}
             >
-              <span className="nav-icon">{item.icon}</span>
-              {sidebarOpen && <span className="nav-label">{item.label}</span>}
+              <span className="nav-label">{item.label}</span>
             </button>
           ))}
         </nav>
 
         <div className="sidebar-footer">
           <div className="user-profile">
-            <span className="user-icon">👤</span>
             {sidebarOpen && (
               <div className="user-info">
                 <p className="user-name">{user.HoTen}</p>
@@ -60,7 +58,6 @@ export default function Layout({ children }) {
             )}
           </div>
           <button className="logout-btn" onClick={handleLogout}>
-            <span>🚪</span>
             {sidebarOpen && <span>Đăng Xuất</span>}
           </button>
         </div>

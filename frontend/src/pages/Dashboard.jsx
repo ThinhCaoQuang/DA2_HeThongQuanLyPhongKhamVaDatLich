@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { benhNhanAPI } from '../services/api';
+import { benhNhanAPI, bacSiAPI, lichKhamAPI } from '../services/api';
 import Layout from '../components/Layout';
+import Loading from '../components/Loading';
 import '../styles/Dashboard.css';
 
 export default function Dashboard() {
@@ -11,6 +12,13 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    totalDoctors: 0,
+    todayAppointments: 0,
+    confirmedAppointments: 0
+  });
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [formData, setFormData] = useState({
     hoTen: '',
     soDienThoai: '',
@@ -24,12 +32,75 @@ export default function Dashboard() {
       navigate('/login');
       return;
     }
-    loadPatients();
+    loadAllData();
   }, []);
+
+  const loadAllData = async () => {
+    setLoading(true);
+    await Promise.all([
+      loadPatients(),
+      loadStatistics(),
+      loadUpcomingAppointments()
+    ]);
+    setLoading(false);
+  };
+
+  const loadStatistics = async () => {
+    try {
+      const [patientsRes, doctorsRes, appointmentsRes] = await Promise.all([
+        benhNhanAPI.getAll(),
+        bacSiAPI.getAll(),
+        lichKhamAPI.getAll()
+      ]);
+
+      const patientsData = patientsRes.data?.data || patientsRes.data || [];
+      const doctorsData = doctorsRes.data?.data || doctorsRes.data || [];
+      const appointmentsData = appointmentsRes.data?.data || appointmentsRes.data || [];
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const todayAppts = appointmentsData.filter(apt => {
+        const aptDate = new Date(apt.NgayGioKham);
+        return aptDate >= today && aptDate < tomorrow;
+      });
+
+      const confirmedAppts = appointmentsData.filter(apt => 
+        apt.TrangThai === 'Đã xác nhận'
+      );
+
+      setStats({
+        totalPatients: patientsData.length,
+        totalDoctors: doctorsData.length,
+        todayAppointments: todayAppts.length,
+        confirmedAppointments: confirmedAppts.length
+      });
+    } catch (error) {
+      console.error('Lỗi tải thống kê:', error);
+    }
+  };
+
+  const loadUpcomingAppointments = async () => {
+    try {
+      const response = await lichKhamAPI.getAll();
+      const data = response.data?.data || response.data || [];
+      
+      const now = new Date();
+      const upcoming = data
+        .filter(apt => new Date(apt.NgayGioKham) >= now)
+        .sort((a, b) => new Date(a.NgayGioKham) - new Date(b.NgayGioKham))
+        .slice(0, 5);
+      
+      setUpcomingAppointments(upcoming);
+    } catch (error) {
+      console.error('Lỗi tải lịch khám sắp tới:', error);
+    }
+  };
 
   const loadPatients = async () => {
     try {
-      setLoading(true);
       const response = await benhNhanAPI.getAll();
       const data = response.data?.data || response.data || [];
       const patientsData = Array.isArray(data) ? data : [];
@@ -39,8 +110,6 @@ export default function Dashboard() {
       console.error('Lỗi tải danh sách bệnh nhân:', error);
       setPatients([]);
       setFilteredPatients([]);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -66,7 +135,7 @@ export default function Dashboard() {
       await benhNhanAPI.create(formData);
       setFormData({ hoTen: '', soDienThoai: '', email: '', diaChi: '' });
       setShowForm(false);
-      loadPatients();
+      await loadAllData();
     } catch (error) {
       alert('Lỗi thêm bệnh nhân: ' + error.response?.data?.message);
     }
@@ -76,18 +145,94 @@ export default function Dashboard() {
     if (window.confirm('Bạn chắc chắn muốn xóa?')) {
       try {
         await benhNhanAPI.delete(id);
-        loadPatients();
+        await loadAllData();
       } catch (error) {
         alert('Lỗi xóa bệnh nhân');
       }
     }
   };
 
+  const formatDateTime = (dateTime) => {
+    const date = new Date(dateTime);
+    return date.toLocaleString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <Layout>
+      {loading ? (
+        <Loading />
+      ) : (
       <div className="page-container">
         <div className="page-header">
-          <h1>Quản Lý Bệnh Nhân</h1>
+          <h1>Dashboard</h1>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="stats-grid">
+          <div className="stat-card patients">
+            <div className="stat-icon">👥</div>
+            <div className="stat-info">
+              <h3>{stats.totalPatients}</h3>
+              <p>Tổng Bệnh Nhân</p>
+            </div>
+          </div>
+
+          <div className="stat-card doctors">
+            <div className="stat-icon">👨‍⚕️</div>
+            <div className="stat-info">
+              <h3>{stats.totalDoctors}</h3>
+              <p>Tổng Bác Sĩ</p>
+            </div>
+          </div>
+
+          <div className="stat-card today">
+            <div className="stat-icon">📅</div>
+            <div className="stat-info">
+              <h3>{stats.todayAppointments}</h3>
+              <p>Lịch Khám Hôm Nay</p>
+            </div>
+          </div>
+
+          <div className="stat-card confirmed">
+            <div className="stat-icon">✓</div>
+            <div className="stat-info">
+              <h3>{stats.confirmedAppointments}</h3>
+              <p>Đã Xác Nhận</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Upcoming Appointments */}
+        {upcomingAppointments.length > 0 && (
+          <div className="upcoming-section">
+            <h2>Lịch Khám Sắp Tới</h2>
+            <div className="upcoming-list">
+              {upcomingAppointments.map((apt) => (
+                <div key={apt.MaLichKham} className="upcoming-item">
+                  <div className="upcoming-time">
+                    {formatDateTime(apt.NgayGioKham)}
+                  </div>
+                  <div className="upcoming-details">
+                    <strong>{apt.BenhNhan?.NguoiDung?.HoTen || 'N/A'}</strong>
+                    <span> - {apt.BacSi?.NguoiDung?.HoTen || 'N/A'}</span>
+                  </div>
+                  <div className={`upcoming-status status-${apt.TrangThai?.toLowerCase().replace(/\s/g, '-')}`}>
+                    {apt.TrangThai}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="page-header">
+          <h2>Quản Lý Bệnh Nhân</h2>
         </div>
 
         <section className="content-section">
@@ -96,7 +241,7 @@ export default function Dashboard() {
             <div className="header-actions">
               <input
                 type="text"
-                placeholder="🔍 Tìm kiếm bệnh nhân..."
+                placeholder="Tìm kiếm bệnh nhân..."
                 value={searchTerm}
                 onChange={handleSearch}
                 className="search-input"
@@ -188,6 +333,7 @@ export default function Dashboard() {
           )}
         </section>
       </div>
+      )}
     </Layout>
   );
 }

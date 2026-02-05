@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { lichKhamAPI, benhNhanAPI, bacSiAPI } from '../services/api';
 import Layout from '../components/Layout';
+import Loading from '../components/Loading';
 import '../styles/LichKham.css';
 
 export default function LichKham() {
@@ -309,7 +310,7 @@ export default function LichKham() {
           )}
 
           {loading ? (
-            <div className="loading">Đang tải dữ liệu...</div>
+            <Loading />
           ) : (
             <div className="table-wrapper">
               <table className="data-table">

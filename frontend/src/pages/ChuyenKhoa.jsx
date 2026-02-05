@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { chuyenKhoaAPI } from '../services/api';
 import Layout from '../components/Layout';
+import Loading from '../components/Loading';
 import '../styles/ChuyenKhoa.css';
 
 export default function ChuyenKhoa() {
@@ -122,7 +123,7 @@ export default function ChuyenKhoa() {
             <div className="header-actions">
               <input
                 type="text"
-                placeholder="🔍 Tìm kiếm chuyên khoa..."
+                placeholder="Tìm kiếm chuyên khoa..."
                 value={searchTerm}
                 onChange={handleSearch}
                 className="search-input"
@@ -179,7 +180,7 @@ export default function ChuyenKhoa() {
           )}
 
           {loading ? (
-            <div className="loading">Đang tải dữ liệu...</div>
+            <Loading />
           ) : filteredSpecialties.length === 0 ? (
             <p>{searchTerm ? 'Không tìm thấy chuyên khoa phù hợp' : 'Không có chuyên khoa nào'}</p>
           ) : (
