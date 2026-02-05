@@ -43,27 +43,12 @@
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-.btn-nav {
-  padding: 8px 16px;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid white;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-weight: bold;
-}
-
-.btn-nav:hover {
-  background-color: rgba(255, 255, 255, 0.4);
-}
-
 .dashboard-main {
   flex: 1;
   padding: 30px;
 }
 
-.patients-section {
+.doctors-section {
   background: white;
   padding: 20px;
   border-radius: 10px;
@@ -97,7 +82,7 @@
   background-color: #218838;
 }
 
-.add-patient-form {
+.add-doctor-form {
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 5px;
@@ -107,20 +92,39 @@
   gap: 15px;
 }
 
-.add-patient-form .form-group {
+.add-doctor-form .form-group {
   grid-column: span 1;
 }
 
-.add-patient-form .btn-submit {
+.add-doctor-form .form-actions {
   grid-column: span 2;
+  display: flex;
+  gap: 10px;
 }
 
-.add-patient-form input {
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-weight: 500;
+}
+
+.form-group input {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
 }
 
 .btn-submit {
@@ -138,17 +142,32 @@
   background-color: #0056b3;
 }
 
-.patients-table {
+.btn-cancel {
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+}
+
+.doctors-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
 }
 
-.patients-table thead {
+.doctors-table thead {
   background-color: #f0f0f0;
 }
 
-.patients-table th {
+.doctors-table th {
   padding: 12px;
   text-align: left;
   font-weight: 600;
@@ -156,14 +175,30 @@
   border-bottom: 2px solid #ddd;
 }
 
-.patients-table td {
+.doctors-table td {
   padding: 12px;
   border-bottom: 1px solid #eee;
   color: #666;
 }
 
-.patients-table tbody tr:hover {
+.doctors-table tbody tr:hover {
   background-color: #f9f9f9;
+}
+
+.btn-edit {
+  padding: 6px 12px;
+  background-color: #ffc107;
+  color: #333;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 5px;
+  transition: background-color 0.2s;
+}
+
+.btn-edit:hover {
+  background-color: #e0a800;
 }
 
 .btn-delete {
@@ -182,20 +217,20 @@
 }
 
 @media (max-width: 768px) {
-  .add-patient-form {
+  .add-doctor-form {
     grid-template-columns: 1fr;
   }
 
-  .add-patient-form .btn-submit {
+  .add-doctor-form .form-actions {
     grid-column: span 1;
   }
 
-  .patients-table {
+  .doctors-table {
     font-size: 12px;
   }
 
-  .patients-table th,
-  .patients-table td {
+  .doctors-table th,
+  .doctors-table td {
     padding: 8px;
   }
 }

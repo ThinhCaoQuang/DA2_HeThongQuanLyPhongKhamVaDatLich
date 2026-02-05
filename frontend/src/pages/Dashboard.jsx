@@ -30,9 +30,11 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const response = await benhNhanAPI.getAll();
-      setPatients(response.data || []);
+      const data = response.data?.data || response.data || [];
+      setPatients(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Lỗi tải danh sách bệnh nhân:', error);
+      setPatients([]);
     } finally {
       setLoading(false);
     }
@@ -72,6 +74,7 @@ export default function Dashboard() {
         <h1>Dashboard - Quản Lý Bệnh Nhân</h1>
         <div className="user-info">
           <span>Xin chào: {user?.HoTen}</span>
+          <button onClick={() => navigate('/bacsi')} className="btn-nav">Quản Lý Bác Sĩ</button>
           <button onClick={handleLogout} className="btn-logout">Đăng Xuất</button>
         </div>
       </header>
