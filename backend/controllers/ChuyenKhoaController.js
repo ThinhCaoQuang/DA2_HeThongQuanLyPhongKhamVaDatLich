@@ -1,135 +1,198 @@
-const { ChuyenKhoa } = require('../models');
+const { ChuyenKhoa, BacSi } = require('../models');
+const { Op } = require('sequelize');
 
-// GET all chuyên khoa
-exports.getAll = async (req, res) => {
-  try {
-    const chuyenKhoaList = await ChuyenKhoa.findAll({
-      where: { TrangThai: 'HoatDong' },
-      order: [['CreatedAt', 'DESC']]
-    });
-    res.json({
-      success: true,
-      data: chuyenKhoaList
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi lấy danh sách chuyên khoa',
-      error: error.message
-    });
-  }
-};
+const ChuyenKhoaController = {
+  // Get all specialties
+  getAll: async (req, res) => {
+    try {
+      const { page = 1, limit = 10, search = '' } = req.query;
+      const offset = (page - 1) * limit;
 
-// GET chuyên khoa by ID
-exports.getById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const chuyenKhoa = await ChuyenKhoa.findByPk(id);
-    
-    if (!chuyenKhoa) {
-      return res.status(404).json({
+      const where = {};
+      if (search) {
+        where.TenChuyenKhoa = { [Op.like]: `%${search}%` };
+      }
+
+      const { count, rows } = await ChuyenKhoa.findAndCountAll({
+        where,
+        offset,
+        limit: parseInt(limit),
+        include: [
+          {
+            model: BacSi,
+            through: { attributes: [] },
+            attributes: ['BacSiId']
+          }
+        ],
+        order: [['ChuyenKhoaId', 'DESC']]
+      });
+
+      res.status(200).json({
+        success: true,
+        data: rows,
+        pagination: {
+          total: count,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(count / limit)
+        }
+      });
+    } catch (error) {
+      console.error('Get all specialties error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Chuyên khoa không tìm thấy'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    res.json({
-      success: true,
-      data: chuyenKhoa
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi lấy thông tin chuyên khoa',
-      error: error.message
-    });
-  }
-};
+  // Get specialty by ID
+  getById: async (req, res) => {
+    try {
+      const { id } = req.params;
 
-// CREATE chuyên khoa
-exports.create = async (req, res) => {
-  try {
-    const { TenChuyenKhoa, MoTa } = req.body;
+      const specialty = await ChuyenKhoa.findOne({
+        where: { ChuyenKhoaId: id },
+        include: [
+          {
+            model: BacSi,
+            through: { attributes: ['LaChuyenMonChinh'] }
+          }
+        ]
+      });
 
-    if (!TenChuyenKhoa) {
-      return res.status(400).json({
+      if (!specialty) {
+        return res.status(404).json({
+          success: false,
+          message: 'Chuyên khoa không tìm thấy'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: specialty
+      });
+    } catch (error) {
+      console.error('Get specialty error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Tên chuyên khoa là bắt buộc'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    const chuyenKhoa = await ChuyenKhoa.create({
-      TenChuyenKhoa,
-      MoTa
-    });
+  // Create specialty
+  create: async (req, res) => {
+    try {
+      const { tenChuyenKhoa, moTa } = req.body;
 
-    res.status(201).json({
-      success: true,
-      message: 'Tạo chuyên khoa thành công',
-      data: chuyenKhoa
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi tạo chuyên khoa',
-      error: error.message
-    });
-  }
-};
+      if (!tenChuyenKhoa) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tên chuyên khoa không được để trống'
+        });
+      }
 
-// UPDATE chuyên khoa
-exports.update = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const chuyenKhoa = await ChuyenKhoa.findByPk(id);
+      // Check if specialty already exists
+      const existingSpecialty = await ChuyenKhoa.findOne({
+        where: { TenChuyenKhoa: tenChuyenKhoa }
+      });
 
-    if (!chuyenKhoa) {
-      return res.status(404).json({
+      if (existingSpecialty) {
+        return res.status(409).json({
+          success: false,
+          message: 'Chuyên khoa đã tồn tại'
+        });
+      }
+
+      const specialty = await ChuyenKhoa.create({
+        TenChuyenKhoa: tenChuyenKhoa,
+        MoTa: moTa,
+        TrangThai: 'HoatDong'
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Tạo chuyên khoa thành công',
+        data: specialty
+      });
+    } catch (error) {
+      console.error('Create specialty error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Chuyên khoa không tìm thấy'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    await chuyenKhoa.update(req.body);
+  // Update specialty
+  update: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { tenChuyenKhoa, moTa, trangThai } = req.body;
 
-    res.json({
-      success: true,
-      message: 'Cập nhật chuyên khoa thành công',
-      data: chuyenKhoa
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi cập nhật chuyên khoa',
-      error: error.message
-    });
-  }
-};
+      const specialty = await ChuyenKhoa.findByPk(id);
 
-// DELETE chuyên khoa
-exports.delete = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const chuyenKhoa = await ChuyenKhoa.findByPk(id);
+      if (!specialty) {
+        return res.status(404).json({
+          success: false,
+          message: 'Chuyên khoa không tìm thấy'
+        });
+      }
 
-    if (!chuyenKhoa) {
-      return res.status(404).json({
+      await specialty.update({
+        TenChuyenKhoa: tenChuyenKhoa || specialty.TenChuyenKhoa,
+        MoTa: moTa !== undefined ? moTa : specialty.MoTa,
+        TrangThai: trangThai || specialty.TrangThai
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Cập nhật chuyên khoa thành công',
+        data: specialty
+      });
+    } catch (error) {
+      console.error('Update specialty error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Chuyên khoa không tìm thấy'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    await chuyenKhoa.destroy();
+  // Delete specialty
+  delete: async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    res.json({
-      success: true,
-      message: 'Xóa chuyên khoa thành công'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi xóa chuyên khoa',
-      error: error.message
-    });
+      const specialty = await ChuyenKhoa.findByPk(id);
+
+      if (!specialty) {
+        return res.status(404).json({
+          success: false,
+          message: 'Chuyên khoa không tìm thấy'
+        });
+      }
+
+      await specialty.destroy();
+
+      res.status(200).json({
+        success: true,
+        message: 'Xóa chuyên khoa thành công'
+      });
+    } catch (error) {
+      console.error('Delete specialty error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ',
+        error: error.message
+      });
+    }
   }
 };
+
+module.exports = ChuyenKhoaController;

@@ -1,0 +1,31 @@
+=== SERVER DEBUG LOG ===
+[2026-02-26T12:20:46.291Z] 🚀 Starting server...
+[2026-02-26T12:20:46.294Z] ℹ️ Applying middleware...
+[2026-02-26T12:20:46.299Z] ✓ CORS configured
+[2026-02-26T12:20:46.301Z] ✓ express.json() configured
+[2026-02-26T12:20:46.303Z] ✓ express.urlencoded() configured
+[2026-02-26T12:20:46.370Z] ℹ️ Routes registered
+[2026-02-26T12:20:46.416Z] ✓ Database connection successful
+[2026-02-26T12:20:46.419Z] ✓ Server running on port 5000
+[2026-02-26T12:20:47.420Z] 
+=== STARTING TEST ===
+[2026-02-26T12:20:47.422Z] 📤 Logging in...
+[2026-02-26T12:20:47.564Z] ✅ Login successful
+[2026-02-26T12:20:47.565Z] 📤 Creating doctor...
+[2026-02-26T12:20:47.565Z] Payload: {
+  "HoTen": "Test Doctor",
+  "SoChungChi": "CC1772108447565",
+  "DienThoai": "0987654321",
+  "Email": "test@example.com",
+  "DiaChi": "Test Address",
+  "ChuyenKhoaId": 1,
+  "CapHocVan": "ThacSi",
+  "NamKinhNghiem": 5
+}
+[2026-02-26T12:20:47.572Z] ❌ Error: Họ tên và số chứng chỉ không được để trống
+[2026-02-26T12:20:47.573Z] Full error: {
+  "success": false,
+  "message": "Họ tên và số chứng chỉ không được để trống"
+}
+[2026-02-26T12:20:47.573Z] 
+=== TEST COMPLETE - Check D:\DOAN2\DA2_HeThongQuanLyPhongKhamVaDatLich\backend\debug.log ===

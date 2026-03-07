@@ -1,26 +1,22 @@
 const express = require('express');
-const router = express.Router();
 const LichKhamController = require('../controllers/LichKhamController');
+const AuthMiddleware = require('../middleware/AuthMiddleware');
 
-// GET all
-router.get('/', LichKhamController.getAll);
+const router = express.Router();
 
-// GET by ID
-router.get('/:id', LichKhamController.getById);
+// All routes require authentication
+router.use(AuthMiddleware.verifyToken);
 
-// CREATE
-router.post('/', LichKhamController.create);
+// CRUD operations (LeTan, QuanTri, BacSi can read)
+router.get('/', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'BacSi']), LichKhamController.getAll);
+router.get('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'BacSi']), LichKhamController.getById);
+router.post('/', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.create);
+router.put('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.update);
+router.delete('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.delete);
 
-// UPDATE
-router.put('/:id', LichKhamController.update);
-
-// DELETE
-router.delete('/:id', LichKhamController.delete);
-
-// Xác nhận lịch khám
-router.patch('/:id/confirm', LichKhamController.confirm);
-
-// Hủy lịch khám
-router.patch('/:id/cancel', LichKhamController.cancel);
+// Special operations
+router.post('/:id/confirm', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.confirmAppointment);
+router.post('/:id/cancel', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.cancelAppointment);
+router.post('/:id/complete', AuthMiddleware.checkRole(['BacSi']), LichKhamController.completeAppointment);
 
 module.exports = router;

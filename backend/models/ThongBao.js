@@ -7,21 +7,27 @@ const ThongBao = sequelize.define('ThongBao', {
     primaryKey: true,
     autoIncrement: true
   },
-  TaiKhoanId: {
-    type: DataTypes.INTEGER,
+  MaThongBao: {
+    type: DataTypes.STRING(20),
+    unique: true,
     allowNull: false
   },
-  LichKhamId: {
+  BenhNhanId: {
     type: DataTypes.INTEGER,
     allowNull: true
   },
+  BacSiId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  LichKhamId: DataTypes.INTEGER,
   LoaiThongBao: {
-    type: DataTypes.ENUM('NhacLich', 'LichDaXacNhan', 'LichDaHuy', 'LichDaKham', 'CanhBao'),
-    defaultValue: 'CanhBao'
+    type: DataTypes.ENUM('NhacLichKham', 'XacNhanLichKham', 'HuyLichKham', 'YeuCauKham', 'VanBan'),
+    allowNull: false
   },
   TieuDe: {
-    type: DataTypes.STRING(200),
-    allowNull: true
+    type: DataTypes.STRING(255),
+    allowNull: false
   },
   NoiDung: {
     type: DataTypes.TEXT,
@@ -31,13 +37,18 @@ const ThongBao = sequelize.define('ThongBao', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
+  ThoiGianGui: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  },
+  ThoiGianDoc: DataTypes.DATE,
   CreatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   },
-  DocLuc: {
+  UpdatedAt: {
     type: DataTypes.DATE,
-    allowNull: true
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'ThongBao',

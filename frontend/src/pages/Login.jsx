@@ -1,113 +1,86 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api';
-import '../styles/Login.css';
+import { useState, useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../context/AuthContext'
+import '../styles/login.css'
 
 export default function Login() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    tenDangNhap: '',
-    matKhau: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { login } = useContext(AuthContext)
+  const navigate = useNavigate()
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
 
     try {
-      const response = await authAPI.login(formData);
-      const { token, user } = response.data;
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-
-      navigate('/dashboard');
+      const result = await login(username, password)
+      if (result?.user) {
+        navigate('/dashboard')
+      } else {
+        setError('Đăng nhập thất bại')
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Đăng nhập thất bại');
+      setError(err.response?.data?.message || 'Lỗi kết nối đến server')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const registerData = {
-        ...formData,
-        hoTen: formData.tenDangNhap,
-        email: `${formData.tenDangNhap}@clinic.com`,
-        vaiTro: 'LeTan'
-      };
-
-      const response = await authAPI.register(registerData);
-      const { token, user } = response.data;
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Đăng ký thất bại');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }
 
   return (
     <div className="login-container">
       <div className="login-box">
-        <h1>Hệ Thống Quản Lý Phòng Khám</h1>
-        
-        <form onSubmit={handleLogin}>
+        <div className="login-header">
+          <h1>Hệ Thống Quản Lý Phòng Khám</h1>
+          <p>Đăng Nhập</p>
+        </div>
+
+        {error && <div className="alert alert-danger">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label>Tên Đăng Nhập</label>
+            <label htmlFor="username">Tên Đăng Nhập</label>
             <input
               type="text"
-              name="tenDangNhap"
-              value={formData.tenDangNhap}
-              onChange={handleChange}
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               placeholder="Nhập tên đăng nhập"
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Mật Khẩu</label>
+            <label htmlFor="password">Mật Khẩu</label>
             <input
               type="password"
-              name="matKhau"
-              value={formData.matKhau}
-              onChange={handleChange}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Nhập mật khẩu"
               required
             />
           </div>
 
-          {error && <div className="error-message">{error}</div>}
-
-          <button type="submit" disabled={loading} className="btn-login">
-            {loading ? 'Đang xử lý...' : 'Đăng Nhập'}
+          <button
+            type="submit"
+            className="btn-primary login-btn"
+            disabled={loading}
+          >
+            {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
           </button>
         </form>
 
-        <p className="register-hint">
-          Hoặc click "Đăng Nhập" với tài khoản demo: <br/>
-          <strong>tenDangNhap: doctor1 | matKhau: Password@123</strong>
-        </p>
+        <div className="login-footer">
+          <p>Tài khoản demo:</p>
+          <p>Nhân viên tiếp tân: test456 / Test@123</p>
+          <p>Bác sĩ: doctor1 / Doctor@123</p>
+          <p>Quản trị viên: admin / Admin@123</p>
+        </div>
       </div>
     </div>
-  );
+  )
 }

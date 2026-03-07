@@ -9,8 +9,7 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'mysql',
-    timezone: '+07:00', // Vietnam timezone
-    logging: console.log, // Để xem SQL queries, set false để tắt
+    logging: false,
     pool: {
       max: 5,
       min: 0,
@@ -19,14 +18,5 @@ const sequelize = new Sequelize(
     }
   }
 );
-
-// Test connection
-sequelize.authenticate()
-  .then(() => {
-    console.log('✅ Database connection has been established successfully.');
-  })
-  .catch(err => {
-    console.error('❌ Unable to connect to the database:', err);
-  });
 
 module.exports = sequelize;

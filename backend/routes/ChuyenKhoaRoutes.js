@@ -1,20 +1,19 @@
 const express = require('express');
-const router = express.Router();
 const ChuyenKhoaController = require('../controllers/ChuyenKhoaController');
+const AuthMiddleware = require('../middleware/AuthMiddleware');
 
-// GET all
+const router = express.Router();
+
+// All routes require authentication
+router.use(AuthMiddleware.verifyToken);
+
+// Get specialties (all roles can view)
 router.get('/', ChuyenKhoaController.getAll);
-
-// GET by ID
 router.get('/:id', ChuyenKhoaController.getById);
 
-// CREATE
-router.post('/', ChuyenKhoaController.create);
-
-// UPDATE
-router.put('/:id', ChuyenKhoaController.update);
-
-// DELETE
-router.delete('/:id', ChuyenKhoaController.delete);
+// Create/Update/Delete (QuanTri only)
+router.post('/', AuthMiddleware.checkRole(['QuanTri']), ChuyenKhoaController.create);
+router.put('/:id', AuthMiddleware.checkRole(['QuanTri']), ChuyenKhoaController.update);
+router.delete('/:id', AuthMiddleware.checkRole(['QuanTri']), ChuyenKhoaController.delete);
 
 module.exports = router;

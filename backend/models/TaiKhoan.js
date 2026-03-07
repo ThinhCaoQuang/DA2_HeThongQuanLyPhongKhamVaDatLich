@@ -14,8 +14,8 @@ const TaiKhoan = sequelize.define('TaiKhoan', {
   },
   TenDangNhap: {
     type: DataTypes.STRING(50),
-    allowNull: false,
-    unique: true
+    unique: true,
+    allowNull: false
   },
   MatKhauHash: {
     type: DataTypes.STRING(255),
@@ -35,8 +35,7 @@ const TaiKhoan = sequelize.define('TaiKhoan', {
   },
   UpdatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    onUpdate: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'TaiKhoan',

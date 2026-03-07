@@ -9,49 +9,25 @@ const BenhNhan = sequelize.define('BenhNhan', {
   },
   MaBenhNhan: {
     type: DataTypes.STRING(20),
-    allowNull: false,
-    unique: true
+    unique: true,
+    allowNull: false
   },
   HoTen: {
     type: DataTypes.STRING(100),
     allowNull: false
   },
-  NgaySinh: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
+  NgaySinh: DataTypes.DATE,
   GioiTinh: {
-    type: DataTypes.ENUM('Nam', 'Nu', 'Khac'),
-    allowNull: true
+    type: DataTypes.ENUM('Nam', 'Nu', 'Khac')
   },
-  DienThoai: {
-    type: DataTypes.STRING(20),
-    allowNull: true
-  },
-  Email: {
-    type: DataTypes.STRING(100),
-    allowNull: true
-  },
-  DiaChi: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  ThanhPho: {
-    type: DataTypes.STRING(50),
-    allowNull: true
-  },
-  TienSuBenhLy: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  DiUng: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  GhiChu: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
+  CCCD: DataTypes.STRING(12),
+  DienThoai: DataTypes.STRING(20),
+  Email: DataTypes.STRING(100),
+  DiaChi: DataTypes.TEXT,
+  ThanhPho: DataTypes.STRING(50),
+  TienSuBenhLy: DataTypes.TEXT,
+  DiUng: DataTypes.TEXT,
+  GhiChu: DataTypes.TEXT,
   TrangThai: {
     type: DataTypes.ENUM('HoatDong', 'KhongHoatDong'),
     defaultValue: 'HoatDong'
@@ -62,8 +38,7 @@ const BenhNhan = sequelize.define('BenhNhan', {
   },
   UpdatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    onUpdate: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'BenhNhan',

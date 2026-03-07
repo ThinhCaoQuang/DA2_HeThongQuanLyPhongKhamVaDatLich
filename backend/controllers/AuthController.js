@@ -1,217 +1,297 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { NguoiDung, TaiKhoan } = require('../models');
+const { NguoiDung, TaiKhoan, BacSi } = require('../models');
 
-// REGISTER
-exports.register = async (req, res) => {
-  try {
-    // Accept both camelCase and PascalCase
-    const { HoTen, hoTen, Email, email, DienThoai, soDienThoai, GioiTinh, gioiTinh, TenDangNhap, tenDangNhap, MatKhau, matKhau, VaiTro, vaiTro } = req.body;
-    
-    const finalHoTen = HoTen || hoTen;
-    const finalEmail = Email || email;
-    const finalDienThoai = DienThoai || soDienThoai;
-    const finalGioiTinh = GioiTinh || gioiTinh;
-    const finalTenDangNhap = TenDangNhap || tenDangNhap;
-    const finalMatKhau = MatKhau || matKhau;
-    const finalVaiTro = VaiTro || vaiTro;
+// Generate JWT token
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user.TaiKhoanId, username: user.TenDangNhap, role: user.VaiTro },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+};
 
-    // Validation
-    if (!finalHoTen || !finalTenDangNhap || !finalMatKhau) {
-      return res.status(400).json({
-        success: false,
-        message: 'Vui lòng cung cấp hoTen, tenDangNhap, matKhau'
-      });
-    }
+const AuthController = {
+  // Login
+  login: async (req, res) => {
+    try {
+      const { username, password } = req.body;
 
-    // Check nếu username đã tồn tại
-    const existingUser = await TaiKhoan.findOne({
-      where: { TenDangNhap: finalTenDangNhap }
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'Tên đăng nhập đã tồn tại'
-      });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(finalMatKhau, salt);
-
-    // Tạo NguoiDung
-    const nguoiDung = await NguoiDung.create({
-      HoTen: finalHoTen,
-      Email: finalEmail,
-      DienThoai: finalDienThoai,
-      GioiTinh: finalGioiTinh || 'Nam'
-    });
-
-    // Tạo TaiKhoan
-    const taiKhoan = await TaiKhoan.create({
-      NguoiDungId: nguoiDung.NguoiDungId,
-      TenDangNhap: finalTenDangNhap,
-      MatKhauHash: hashedPassword,
-      VaiTro: finalVaiTro || 'LeTan',
-      TrangThai: 'HoatDong'
-    });
-
-    // Tạo JWT token
-    const token = jwt.sign(
-      {
-        TaiKhoanId: taiKhoan.TaiKhoanId,
-        TenDangNhap: taiKhoan.TenDangNhap,
-        VaiTro: taiKhoan.VaiTro
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.status(201).json({
-      success: true,
-      message: 'Đăng ký thành công',
-      token,
-      user: {
-        TaiKhoanId: taiKhoan.TaiKhoanId,
-        TenDangNhap: taiKhoan.TenDangNhap,
-        VaiTro: taiKhoan.VaiTro,
-        HoTen: nguoiDung.HoTen
+      if (!username || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tên đăng nhập và mật khẩu không được để trống'
+        });
       }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi đăng ký',
-      error: error.message
-    });
-  }
-};
 
-// LOGIN
-exports.login = async (req, res) => {
-  try {
-    // Accept both camelCase and PascalCase
-    const { TenDangNhap, tenDangNhap, MatKhau, matKhau } = req.body;
-    
-    const finalTenDangNhap = TenDangNhap || tenDangNhap;
-    const finalMatKhau = MatKhau || matKhau;
-
-    // Validation
-    if (!finalTenDangNhap || !finalMatKhau) {
-      return res.status(400).json({
-        success: false,
-        message: 'Vui lòng cung cấp tenDangNhap và matKhau'
+      // Find account
+      const account = await TaiKhoan.findOne({
+        where: { TenDangNhap: username },
+        include: [{ model: NguoiDung }]
       });
-    }
 
-    // Tìm tài khoản
-    const taiKhoan = await TaiKhoan.findOne({
-      where: { TenDangNhap: finalTenDangNhap },
-      include: [
-        {
-          model: NguoiDung,
-          attributes: ['NguoiDungId', 'HoTen', 'Email', 'DienThoai']
-        }
-      ]
-    });
-
-    if (!taiKhoan) {
-      return res.status(401).json({
-        success: false,
-        message: 'Tên đăng nhập hoặc mật khẩu không đúng'
-      });
-    }
-
-    // Kiểm tra mật khẩu
-    const isPasswordValid = await bcrypt.compare(finalMatKhau, taiKhoan.MatKhauHash);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: 'Tên đăng nhập hoặc mật khẩu không đúng'
-      });
-    }
-
-    // Kiểm tra trạng thái
-    if (taiKhoan.TrangThai !== 'HoatDong') {
-      return res.status(403).json({
-        success: false,
-        message: 'Tài khoản đã bị khóa'
-      });
-    }
-
-    // Tạo JWT token
-    const token = jwt.sign(
-      {
-        TaiKhoanId: taiKhoan.TaiKhoanId,
-        TenDangNhap: taiKhoan.TenDangNhap,
-        VaiTro: taiKhoan.VaiTro
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      success: true,
-      message: 'Đăng nhập thành công',
-      token,
-      user: {
-        TaiKhoanId: taiKhoan.TaiKhoanId,
-        TenDangNhap: taiKhoan.TenDangNhap,
-        VaiTro: taiKhoan.VaiTro,
-        HoTen: taiKhoan.NguoiDung.HoTen,
-        Email: taiKhoan.NguoiDung.Email
+      if (!account) {
+        return res.status(401).json({
+          success: false,
+          message: 'Tên đăng nhập không tồn tại'
+        });
       }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi đăng nhập',
-      error: error.message
-    });
-  }
-};
 
-// GET CURRENT USER (dùng token)
-exports.getCurrentUser = async (req, res) => {
-  try {
-    const TaiKhoanId = req.user.TaiKhoanId;
+      if (account.TrangThai !== 'HoatDong') {
+        return res.status(401).json({
+          success: false,
+          message: 'Tài khoản bị khóa'
+        });
+      }
 
-    const taiKhoan = await TaiKhoan.findByPk(TaiKhoanId, {
-      include: [
-        {
-          model: NguoiDung,
-          attributes: ['NguoiDungId', 'HoTen', 'Email', 'DienThoai', 'GioiTinh', 'NgaySinh']
+      // Check password
+      const isPasswordValid = await bcrypt.compare(password, account.MatKhauHash);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: 'Mật khẩu không đúng'
+        });
+      }
+
+      // Generate token
+      const token = generateToken(account);
+
+      // Build user object
+      const userData = {
+        TaiKhoanId: account.TaiKhoanId,
+        TenDangNhap: account.TenDangNhap,
+        VaiTro: account.VaiTro,
+        HoTen: account.NguoiDung.HoTen,
+        Email: account.NguoiDung.Email,
+        DienThoai: account.NguoiDung.DienThoai
+      };
+
+      // If user is a doctor, fetch their BacSiId
+      if (account.VaiTro === 'BacSi' && account.NguoiDung.NguoiDungId) {
+        const doctor = await BacSi.findOne({
+          where: { NguoiDungId: account.NguoiDung.NguoiDungId }
+        });
+        if (doctor) {
+          userData.BacSiId = doctor.BacSiId;
         }
-      ],
-      attributes: { exclude: ['MatKhauHash'] }
-    });
+      }
 
-    if (!taiKhoan) {
-      return res.status(404).json({
+      res.status(200).json({
+        success: true,
+        message: 'Đăng nhập thành công',
+        data: {
+          token,
+          user: userData
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Tài khoản không tìm thấy'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    res.json({
-      success: true,
-      data: taiKhoan
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi lấy thông tin người dùng',
-      error: error.message
-    });
+  // Register (Admin only)
+  register: async (req, res) => {
+    try {
+      const { username, password, hoTen, email, dienThoai, vaiTro = 'LeTan', soChungChi, capHocVan, namKinhNghiem } = req.body;
+
+      // Validate input
+      if (!username || !password || !hoTen) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tên đăng nhập, mật khẩu và họ tên không được để trống'
+        });
+      }
+
+      // For BacSi, require certificate number
+      if (vaiTro === 'BacSi' && !soChungChi) {
+        return res.status(400).json({
+          success: false,
+          message: 'Số chứng chỉ không được để trống cho bác sĩ'
+        });
+      }
+
+      // Check if username exists
+      const existingAccount = await TaiKhoan.findOne({
+        where: { TenDangNhap: username }
+      });
+
+      if (existingAccount) {
+        return res.status(409).json({
+          success: false,
+          message: 'Tên đăng nhập đã tồn tại'
+        });
+      }
+
+      // Check if certificate number exists (for doctors)
+      if (vaiTro === 'BacSi') {
+        const existingCert = await BacSi.findOne({
+          where: { SoChungChi: soChungChi }
+        });
+        if (existingCert) {
+          return res.status(409).json({
+            success: false,
+            message: 'Số chứng chỉ đã tồn tại'
+          });
+        }
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const user = await NguoiDung.create({
+        HoTen: hoTen,
+        Email: email,
+        DienThoai: dienThoai
+      });
+
+      // Create account
+      const account = await TaiKhoan.create({
+        NguoiDungId: user.NguoiDungId,
+        TenDangNhap: username,
+        MatKhauHash: hashedPassword,
+        VaiTro: vaiTro,
+        TrangThai: 'HoatDong'
+      });
+
+      // If BacSi role, create BacSi record
+      if (vaiTro === 'BacSi') {
+        await BacSi.create({
+          NguoiDungId: user.NguoiDungId,
+          SoChungChi: soChungChi,
+          CapHocVan: capHocVan || 'Chưa cập nhật',
+          NamKinhNghiem: namKinhNghiem || 0,
+          TrangThai: 'HoatDong'
+        });
+      }
+
+      // Generate token
+      const token = generateToken(account);
+
+      res.status(201).json({
+        success: true,
+        message: 'Đăng ký tài khoản thành công',
+        data: {
+          token,
+          user: {
+            TaiKhoanId: account.TaiKhoanId,
+            TenDangNhap: account.TenDangNhap,
+            VaiTro: account.VaiTro,
+            HoTen: user.HoTen,
+            Email: user.Email,
+            DienThoai: user.DienThoai
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Register error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ',
+        error: error.message
+      });
+    }
+  },
+
+  // Get current user
+  getCurrentUser: async (req, res) => {
+    try {
+      const account = await TaiKhoan.findOne({
+        where: { TaiKhoanId: req.user.id },
+        include: [{ model: NguoiDung }]
+      });
+
+      if (!account) {
+        return res.status(404).json({
+          success: false,
+          message: 'Tài khoản không tìm thấy'
+        });
+      }
+
+      const userData = {
+        TaiKhoanId: account.TaiKhoanId,
+        NguoiDungId: account.NguoiDungId,
+        TenDangNhap: account.TenDangNhap,
+        VaiTro: account.VaiTro,
+        HoTen: account.NguoiDung.HoTen,
+        Email: account.NguoiDung.Email,
+        DienThoai: account.NguoiDung.DienThoai,
+        DiaChi: account.NguoiDung.DiaChi
+      };
+
+      // If user is a doctor, fetch their BacSiId
+      if (account.VaiTro === 'BacSi' && account.NguoiDung.NguoiDungId) {
+        const doctor = await BacSi.findOne({
+          where: { NguoiDungId: account.NguoiDung.NguoiDungId }
+        });
+        if (doctor) {
+          userData.BacSiId = doctor.BacSiId;
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        data: userData
+      });
+    } catch (error) {
+      console.error('Get current user error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ',
+        error: error.message
+      });
+    }
+  },
+
+  // Change password
+  changePassword: async (req, res) => {
+    try {
+      const { oldPassword, newPassword } = req.body;
+
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Mật khẩu cũ và mật khẩu mới không được để trống'
+        });
+      }
+
+      const account = await TaiKhoan.findOne({
+        where: { TaiKhoanId: req.user.id }
+      });
+
+      // Verify old password
+      const isPasswordValid = await bcrypt.compare(oldPassword, account.MatKhauHash);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: 'Mật khẩu cũ không đúng'
+        });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await account.update({ MatKhauHash: hashedPassword });
+
+      res.status(200).json({
+        success: true,
+        message: 'Đổi mật khẩu thành công'
+      });
+    } catch (error) {
+      console.error('Change password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ',
+        error: error.message
+      });
+    }
   }
 };
 
-// LOGOUT (chỉ để cho API, client tự xóa token)
-exports.logout = async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Đăng xuất thành công. Vui lòng xóa token trên client.'
-  });
-};
+module.exports = AuthController;

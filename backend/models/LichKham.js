@@ -9,8 +9,8 @@ const LichKham = sequelize.define('LichKham', {
   },
   MaLichKham: {
     type: DataTypes.STRING(20),
-    allowNull: false,
-    unique: true
+    unique: true,
+    allowNull: false
   },
   BenhNhanId: {
     type: DataTypes.INTEGER,
@@ -18,68 +18,39 @@ const LichKham = sequelize.define('LichKham', {
   },
   BacSiId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   ChuyenKhoaId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  NgayKham: {
+  ThoiGianBatDau: {
     type: DataTypes.DATE,
     allowNull: false
   },
-  CaKham: {
-    type: DataTypes.ENUM('Sang', 'Chieu', 'Toi'),
-    allowNull: false
-  },
-  GioKham: {
-    type: DataTypes.TIME,
+  ThoiGianKetThuc: {
+    type: DataTypes.DATE,
     allowNull: true
   },
-  TrieuChung: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
+  TrieuChung: DataTypes.TEXT,
   TrangThai: {
     type: DataTypes.ENUM('ChoXacNhan', 'DaXacNhan', 'DaKham', 'DaHuy'),
     defaultValue: 'ChoXacNhan'
   },
-  LyDoHuy: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  GhiChu: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  TaoBoi: {
-    type: DataTypes.INTEGER,
-    allowNull: true
-  },
-  XacNhanBoi: {
-    type: DataTypes.INTEGER,
-    allowNull: true
-  },
-  HuyBoi: {
-    type: DataTypes.INTEGER,
-    allowNull: true
-  },
+  LyDoHuy: DataTypes.TEXT,
+  GhiChu: DataTypes.TEXT,
+  TaoBoi: DataTypes.INTEGER,
+  XacNhanBoi: DataTypes.INTEGER,
+  HuyBoi: DataTypes.INTEGER,
   CreatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   },
-  ThoiGianXacNhan: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
-  ThoiGianHuy: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
+  ThoiGianXacNhan: DataTypes.DATE,
+  ThoiGianHuy: DataTypes.DATE,
   UpdatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    onUpdate: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'LichKham',

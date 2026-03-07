@@ -7,33 +7,24 @@ const NhatKyHoatDong = sequelize.define('NhatKyHoatDong', {
     primaryKey: true,
     autoIncrement: true
   },
-  TaiKhoanId: {
-    type: DataTypes.INTEGER,
-    allowNull: true
-  },
-  HanhDong: {
-    type: DataTypes.STRING(100),
+  MaNhatKy: {
+    type: DataTypes.STRING(20),
+    unique: true,
     allowNull: false
   },
-  LoaiEntity: {
-    type: DataTypes.STRING(50),
-    allowNull: true
-  },
-  EntityId: {
+  TaiKhoanId: {
     type: DataTypes.INTEGER,
-    allowNull: true
+    allowNull: false
   },
-  GiaTriCu: {
-    type: DataTypes.JSON,
-    allowNull: true
+  LoaiHoatDong: {
+    type: DataTypes.ENUM('DangNhap', 'DangXuat', 'TaoBenhNhan', 'SuaBenhNhan', 'XoaBenhNhan', 'TaoLichKham', 'SuaLichKham', 'HuyLichKham', 'XacNhanLichKham', 'TaoHoSoKhamBenh', 'ChotDonThuoc', 'KhoaLichKham'),
+    allowNull: false
   },
-  GiaTriMoi: {
-    type: DataTypes.JSON,
-    allowNull: true
-  },
-  DiaChiIp: {
-    type: DataTypes.STRING(45),
-    allowNull: true
+  DiaChiIP: DataTypes.STRING(50),
+  ChiTietHoatDong: DataTypes.TEXT,
+  ThoiGian: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   CreatedAt: {
     type: DataTypes.DATE,

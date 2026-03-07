@@ -15,34 +15,18 @@ const NguoiDung = sequelize.define('NguoiDung', {
     type: DataTypes.ENUM('Nam', 'Nu', 'Khac'),
     defaultValue: 'Khac'
   },
-  DienThoai: {
-    type: DataTypes.STRING(20),
-    allowNull: true
-  },
-  Email: {
-    type: DataTypes.STRING(100),
-    allowNull: true
-  },
-  DiaChi: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  ThanhPho: {
-    type: DataTypes.STRING(50),
-    allowNull: true
-  },
-  NgaySinh: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
+  DienThoai: DataTypes.STRING(20),
+  Email: DataTypes.STRING(100),
+  DiaChi: DataTypes.TEXT,
+  ThanhPho: DataTypes.STRING(50),
+  NgaySinh: DataTypes.DATE,
   CreatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   },
   UpdatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    onUpdate: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'NguoiDung',

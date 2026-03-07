@@ -9,35 +9,15 @@ const DonThuoc = sequelize.define('DonThuoc', {
   },
   MaDonThuoc: {
     type: DataTypes.STRING(20),
-    allowNull: false,
-    unique: true
+    unique: true,
+    allowNull: false
   },
   HoSoId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  TenThuoc: {
-    type: DataTypes.STRING(100),
-    allowNull: false
-  },
-  LieuLuong: {
-    type: DataTypes.STRING(50),
-    allowNull: true
-  },
-  SoLuong: {
-    type: DataTypes.INTEGER,
-    allowNull: true
-  },
-  DonVi: {
-    type: DataTypes.STRING(20),
-    allowNull: true
-  },
-  HuongDanSuDung: {
+  GhiChu: {
     type: DataTypes.TEXT,
-    allowNull: true
-  },
-  ThoiGianDung: {
-    type: DataTypes.STRING(50),
     allowNull: true
   },
   CreatedAt: {

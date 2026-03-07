@@ -14,21 +14,12 @@ const BacSi = sequelize.define('BacSi', {
   },
   SoChungChi: {
     type: DataTypes.STRING(50),
-    allowNull: false,
-    unique: true
+    unique: true,
+    allowNull: false
   },
-  CapHocVan: {
-    type: DataTypes.STRING(100),
-    allowNull: true
-  },
-  NamKinhNghiem: {
-    type: DataTypes.INTEGER,
-    allowNull: true
-  },
-  TieuSu: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
+  CapHocVan: DataTypes.STRING(100),
+  NamKinhNghiem: DataTypes.INTEGER,
+  TieuSu: DataTypes.TEXT,
   TrangThai: {
     type: DataTypes.ENUM('HoatDong', 'KhongHoatDong', 'NghiPhep'),
     defaultValue: 'HoatDong'
@@ -39,8 +30,7 @@ const BacSi = sequelize.define('BacSi', {
   },
   UpdatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    onUpdate: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'BacSi',

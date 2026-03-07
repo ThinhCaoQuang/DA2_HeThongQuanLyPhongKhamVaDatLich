@@ -25,13 +25,7 @@ const BacSiChuyenKhoa = sequelize.define('BacSiChuyenKhoa', {
   }
 }, {
   tableName: 'BacSiChuyenKhoa',
-  timestamps: false,
-  indexes: [
-    {
-      unique: true,
-      fields: ['BacSiId', 'ChuyenKhoaId']
-    }
-  ]
+  timestamps: false
 });
 
 module.exports = BacSiChuyenKhoa;

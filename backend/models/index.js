@@ -1,4 +1,6 @@
 const sequelize = require('../config/database');
+
+// Import all models
 const NguoiDung = require('./NguoiDung');
 const TaiKhoan = require('./TaiKhoan');
 const ChuyenKhoa = require('./ChuyenKhoa');
@@ -9,64 +11,166 @@ const LichLamViecBacSi = require('./LichLamViecBacSi');
 const LichKham = require('./LichKham');
 const HoSoKhamBenh = require('./HoSoKhamBenh');
 const DonThuoc = require('./DonThuoc');
+const DonThuocChiTiet = require('./DonThuocChiTiet');
 const ThongBao = require('./ThongBao');
 const NhatKyHoatDong = require('./NhatKyHoatDong');
 
 // Define associations
-NguoiDung.hasOne(TaiKhoan, { foreignKey: 'NguoiDungId', onDelete: 'CASCADE' });
-TaiKhoan.belongsTo(NguoiDung, { foreignKey: 'NguoiDungId' });
+// NguoiDung -> TaiKhoan (1:1)
+NguoiDung.hasOne(TaiKhoan, {
+  foreignKey: 'NguoiDungId',
+  onDelete: 'CASCADE'
+});
+TaiKhoan.belongsTo(NguoiDung, {
+  foreignKey: 'NguoiDungId'
+});
 
-NguoiDung.hasOne(BacSi, { foreignKey: 'NguoiDungId', onDelete: 'CASCADE' });
-BacSi.belongsTo(NguoiDung, { foreignKey: 'NguoiDungId' });
+// NguoiDung -> BacSi (1:1)
+NguoiDung.hasOne(BacSi, {
+  foreignKey: 'NguoiDungId',
+  onDelete: 'CASCADE'
+});
+BacSi.belongsTo(NguoiDung, {
+  foreignKey: 'NguoiDungId'
+});
 
-BacSi.hasMany(BacSiChuyenKhoa, { foreignKey: 'BacSiId', onDelete: 'CASCADE' });
+// BacSi <-> ChuyenKhoa (M:M through BacSiChuyenKhoa)
+BacSi.belongsToMany(ChuyenKhoa, {
+  through: BacSiChuyenKhoa,
+  foreignKey: 'BacSiId',
+  otherKey: 'ChuyenKhoaId',
+  onDelete: 'CASCADE'
+});
+ChuyenKhoa.belongsToMany(BacSi, {
+  through: BacSiChuyenKhoa,
+  foreignKey: 'ChuyenKhoaId',
+  otherKey: 'BacSiId'
+});
+
+// BacSiChuyenKhoa associations
 BacSiChuyenKhoa.belongsTo(BacSi, { foreignKey: 'BacSiId' });
-
-ChuyenKhoa.hasMany(BacSiChuyenKhoa, { foreignKey: 'ChuyenKhoaId', onDelete: 'CASCADE' });
 BacSiChuyenKhoa.belongsTo(ChuyenKhoa, { foreignKey: 'ChuyenKhoaId' });
+BacSi.hasMany(BacSiChuyenKhoa, { foreignKey: 'BacSiId' });
+ChuyenKhoa.hasMany(BacSiChuyenKhoa, { foreignKey: 'ChuyenKhoaId' });
 
-BacSi.hasMany(LichLamViecBacSi, { foreignKey: 'BacSiId', onDelete: 'CASCADE' });
-LichLamViecBacSi.belongsTo(BacSi, { foreignKey: 'BacSiId' });
+// BacSi -> LichLamViecBacSi (1:M)
+BacSi.hasMany(LichLamViecBacSi, {
+  foreignKey: 'BacSiId',
+  onDelete: 'CASCADE'
+});
+LichLamViecBacSi.belongsTo(BacSi, {
+  foreignKey: 'BacSiId'
+});
 
-BenhNhan.hasMany(LichKham, { foreignKey: 'BenhNhanId', onDelete: 'CASCADE' });
-LichKham.belongsTo(BenhNhan, { foreignKey: 'BenhNhanId' });
+// BacSi -> LichKham (1:M)
+BacSi.hasMany(LichKham, {
+  foreignKey: 'BacSiId',
+  onDelete: 'SET NULL'
+});
+LichKham.belongsTo(BacSi, {
+  foreignKey: 'BacSiId'
+});
 
-BacSi.hasMany(LichKham, { foreignKey: 'BacSiId' });
-LichKham.belongsTo(BacSi, { foreignKey: 'BacSiId' });
+// BenhNhan -> LichKham (1:M)
+BenhNhan.hasMany(LichKham, {
+  foreignKey: 'BenhNhanId',
+  onDelete: 'CASCADE'
+});
+LichKham.belongsTo(BenhNhan, {
+  foreignKey: 'BenhNhanId'
+});
 
-ChuyenKhoa.hasMany(LichKham, { foreignKey: 'ChuyenKhoaId' });
-LichKham.belongsTo(ChuyenKhoa, { foreignKey: 'ChuyenKhoaId' });
+// ChuyenKhoa -> LichKham (1:M)
+ChuyenKhoa.hasMany(LichKham, {
+  foreignKey: 'ChuyenKhoaId',
+  onDelete: 'SET NULL'
+});
+LichKham.belongsTo(ChuyenKhoa, {
+  foreignKey: 'ChuyenKhoaId'
+});
 
-TaiKhoan.hasMany(LichKham, { foreignKey: 'TaoBoi', as: 'LichKhamTao' });
-LichKham.belongsTo(TaiKhoan, { foreignKey: 'TaoBoi', as: 'NguoiTao' });
+// LichKham -> HoSoKhamBenh (1:1)
+LichKham.hasOne(HoSoKhamBenh, {
+  foreignKey: 'LichKhamId',
+  onDelete: 'CASCADE'
+});
+HoSoKhamBenh.belongsTo(LichKham, {
+  foreignKey: 'LichKhamId'
+});
 
-TaiKhoan.hasMany(LichKham, { foreignKey: 'XacNhanBoi', as: 'LichKhamXacNhan' });
-LichKham.belongsTo(TaiKhoan, { foreignKey: 'XacNhanBoi', as: 'NguoiXacNhan' });
+// BenhNhan -> HoSoKhamBenh (1:M)
+BenhNhan.hasMany(HoSoKhamBenh, {
+  foreignKey: 'BenhNhanId',
+  onDelete: 'CASCADE'
+});
+HoSoKhamBenh.belongsTo(BenhNhan, {
+  foreignKey: 'BenhNhanId'
+});
 
-TaiKhoan.hasMany(LichKham, { foreignKey: 'HuyBoi', as: 'LichKhamHuy' });
-LichKham.belongsTo(TaiKhoan, { foreignKey: 'HuyBoi', as: 'NguoiHuy' });
+// BacSi -> HoSoKhamBenh (1:M)
+BacSi.hasMany(HoSoKhamBenh, {
+  foreignKey: 'BacSiId',
+  onDelete: 'SET NULL'
+});
+HoSoKhamBenh.belongsTo(BacSi, {
+  foreignKey: 'BacSiId'
+});
 
-LichKham.hasOne(HoSoKhamBenh, { foreignKey: 'LichKhamId', onDelete: 'CASCADE' });
-HoSoKhamBenh.belongsTo(LichKham, { foreignKey: 'LichKhamId' });
+// HoSoKhamBenh -> DonThuoc (1:1)
+HoSoKhamBenh.hasOne(DonThuoc, {
+  foreignKey: 'HoSoId',
+  onDelete: 'CASCADE'
+});
+DonThuoc.belongsTo(HoSoKhamBenh, {
+  foreignKey: 'HoSoId'
+});
 
-BenhNhan.hasMany(HoSoKhamBenh, { foreignKey: 'BenhNhanId', onDelete: 'CASCADE' });
-HoSoKhamBenh.belongsTo(BenhNhan, { foreignKey: 'BenhNhanId' });
+// DonThuoc -> DonThuocChiTiet (1:M)
+DonThuoc.hasMany(DonThuocChiTiet, {
+  foreignKey: 'DonThuocId',
+  onDelete: 'CASCADE'
+});
+DonThuocChiTiet.belongsTo(DonThuoc, {
+  foreignKey: 'DonThuocId'
+});
 
-BacSi.hasMany(HoSoKhamBenh, { foreignKey: 'BacSiId' });
-HoSoKhamBenh.belongsTo(BacSi, { foreignKey: 'BacSiId' });
+// LichKham -> ThongBao (1:M)
+LichKham.hasMany(ThongBao, {
+  foreignKey: 'LichKhamId',
+  onDelete: 'SET NULL'
+});
+ThongBao.belongsTo(LichKham, {
+  foreignKey: 'LichKhamId'
+});
 
-HoSoKhamBenh.hasMany(DonThuoc, { foreignKey: 'HoSoId', onDelete: 'CASCADE' });
-DonThuoc.belongsTo(HoSoKhamBenh, { foreignKey: 'HoSoId' });
+// BenhNhan -> ThongBao (1:M)
+BenhNhan.hasMany(ThongBao, {
+  foreignKey: 'BenhNhanId',
+  onDelete: 'CASCADE'
+});
+ThongBao.belongsTo(BenhNhan, {
+  foreignKey: 'BenhNhanId'
+});
 
-TaiKhoan.hasMany(ThongBao, { foreignKey: 'TaiKhoanId', onDelete: 'CASCADE' });
-ThongBao.belongsTo(TaiKhoan, { foreignKey: 'TaiKhoanId' });
+// BacSi -> ThongBao (1:M)
+BacSi.hasMany(ThongBao, {
+  foreignKey: 'BacSiId',
+  onDelete: 'CASCADE'
+});
+ThongBao.belongsTo(BacSi, {
+  foreignKey: 'BacSiId'
+});
 
-LichKham.hasMany(ThongBao, { foreignKey: 'LichKhamId', onDelete: 'SET NULL' });
-ThongBao.belongsTo(LichKham, { foreignKey: 'LichKhamId' });
+// TaiKhoan -> NhatKyHoatDong (1:M)
+TaiKhoan.hasMany(NhatKyHoatDong, {
+  foreignKey: 'TaiKhoanId',
+  onDelete: 'CASCADE'
+});
+NhatKyHoatDong.belongsTo(TaiKhoan, {
+  foreignKey: 'TaiKhoanId'
+});
 
-TaiKhoan.hasMany(NhatKyHoatDong, { foreignKey: 'TaiKhoanId', onDelete: 'SET NULL' });
-NhatKyHoatDong.belongsTo(TaiKhoan, { foreignKey: 'TaiKhoanId' });
-
+// Export all models
 module.exports = {
   sequelize,
   NguoiDung,
@@ -79,6 +183,7 @@ module.exports = {
   LichKham,
   HoSoKhamBenh,
   DonThuoc,
+  DonThuocChiTiet,
   ThongBao,
   NhatKyHoatDong
 };

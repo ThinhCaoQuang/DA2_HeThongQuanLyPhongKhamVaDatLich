@@ -9,13 +9,13 @@ const HoSoKhamBenh = sequelize.define('HoSoKhamBenh', {
   },
   MaHoSo: {
     type: DataTypes.STRING(20),
-    allowNull: false,
-    unique: true
+    unique: true,
+    allowNull: false
   },
   LichKhamId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    unique: true
+    unique: true,
+    allowNull: false
   },
   BenhNhanId: {
     type: DataTypes.INTEGER,
@@ -33,18 +33,9 @@ const HoSoKhamBenh = sequelize.define('HoSoKhamBenh', {
     type: DataTypes.TEXT,
     allowNull: false
   },
-  KeHoachDieuTri: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  KetLuan: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  GhiChu: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
+  KeHoachDieuTri: DataTypes.TEXT,
+  KetLuan: DataTypes.TEXT,
+  GhiChu: DataTypes.TEXT,
   NgayKham: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
@@ -55,8 +46,7 @@ const HoSoKhamBenh = sequelize.define('HoSoKhamBenh', {
   },
   UpdatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    onUpdate: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'HoSoKhamBenh',

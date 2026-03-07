@@ -1,284 +1,389 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { bacSiAPI } from '../services/api';
-import Layout from '../components/Layout';
-import Loading from '../components/Loading';
-import '../styles/BacSi.css';
+import { useState, useEffect, useContext } from 'react'
+import apiClient from '../services/api'
+import { ToastContext } from '../context/ToastContext'
+import { AuthContext } from '../context/AuthContext'
+import { validateBacSi, hasErrors } from '../utils/validation'
+import '../styles/list.css'
 
 export default function BacSi() {
-  const navigate = useNavigate();
-  const [doctors, setDoctors] = useState([]);
-  const [filteredDoctors, setFilteredDoctors] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
+  const { success, error: showError } = useContext(ToastContext)
+  const { user } = useContext(AuthContext)
+  const [danhsachbacsi, setDanhsachbacsi] = useState([])
+  const [danhsachchuyenkhoa, setDanhsachchuyenkhoa] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [moform, setMoform] = useState(false)
+  const [idchinh, setIdchinh] = useState(null)
+  const [dulieuform, setDulieuform] = useState({
     hoTen: '',
-    soDienThoai: '',
+    dienThoai: '',
     email: '',
-    chuyenMon: '',
-    kinh_nghiem: ''
-  });
+    diaChi: '',
+    soChungChi: '',
+    chuyenKhoaId: '',
+    capHocVan: '',
+    namKinhNghiem: '',
+  })
+  const [loisuform, setLoiSuform] = useState({})
+
+  // Check if user is admin
+  const laAdmin = user?.role === 'QuanTri'
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      navigate('/login');
-      return;
-    }
-    loadDoctors();
-  }, []);
+    layDuLieu()
+  }, [])
 
-  const loadDoctors = async () => {
+  const layDuLieu = async () => {
     try {
-      setLoading(true);
-      const response = await bacSiAPI.getAll();
-      const data = response.data?.data || response.data || [];
-      const doctorsData = Array.isArray(data) ? data : [];
-      setDoctors(doctorsData);
-      setFilteredDoctors(doctorsData);
-    } catch (error) {
-      console.error('Lỗi tải danh sách bác sĩ:', error);
-      setDoctors([]);
-      setFilteredDoctors([]);
+      setLoading(true)
+      const [bacsiRes, chuyenkhoanRes] = await Promise.all([
+        apiClient.get('/bacsi?limit=1000'),
+        apiClient.get('/chuyenkhoa'),
+      ])
+
+      setDanhsachbacsi(bacsiRes.data.data || [])
+      setDanhsachchuyenkhoa(chuyenkhoanRes.data.data || [])
+    } catch (err) {
+      showError('Không thể tải dữ liệu')
+      console.error(err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    
-    if (term === '') {
-      setFilteredDoctors(doctors);
-    } else {
-      const filtered = doctors.filter(doctor =>
-        doctor.NguoiDung?.HoTen?.toLowerCase().includes(term) ||
-        doctor.ChuyenMon?.toLowerCase().includes(term) ||
-        doctor.NguoiDung?.Email?.toLowerCase().includes(term)
-      );
-      setFilteredDoctors(filtered);
+  const xulyThayDoiInput = (e) => {
+    const { name, value } = e.target
+    setDulieuform((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+    if (loisuform[name]) {
+      setLoiSuform((prev) => ({
+        ...prev,
+        [name]: '',
+      }))
     }
-  };
+  }
 
-  const handleLogout = () => {
-    authAPI.logout();
-    navigate('/login');
-  };
+  const xulyGuiForm = async (e) => {
+    e.preventDefault()
 
-  const handleFormChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+    const errors = validateBacSi(dulieuform)
+    if (hasErrors(errors)) {
+      setLoiSuform(errors)
+      showError('Vui lòng kiểm tra các trường thông tin')
+      return
+    }
 
-  const handleAddDoctor = async (e) => {
-    e.preventDefault();
     try {
-      const newDoctor = {
-        hoTen: formData.hoTen,
-        soDienThoai: formData.soDienThoai,
-        email: formData.email,
-        chuyenMon: formData.chuyenMon,
-        kinh_nghiem: parseInt(formData.kinh_nghiem) || 0
-      };
+      setSubmitting(true)
+      const payload = {
+        HoTen: dulieuform.hoTen,
+        DienThoai: dulieuform.dienThoai,
+        Email: dulieuform.email,
+        DiaChi: dulieuform.diaChi,
+        SoChungChi: dulieuform.soChungChi,
+        ChuyenKhoaId: parseInt(dulieuform.chuyenKhoaId),
+        CapHocVan: dulieuform.capHocVan,
+        NamKinhNghiem: dulieuform.namKinhNghiem ? parseInt(dulieuform.namKinhNghiem) : null,
+      }
 
-      if (editingId) {
-        await bacSiAPI.update(editingId, newDoctor);
+      if (idchinh) {
+        await apiClient.put(`/bacsi/${idchinh}`, payload)
+        success('Cập nhật bác sĩ thành công')
       } else {
-        await bacSiAPI.create(newDoctor);
+        await apiClient.post('/bacsi', payload)
+        success('Tạo bác sĩ mới thành công')
       }
 
-      setFormData({
+      setDulieuform({
         hoTen: '',
-        soDienThoai: '',
+        dienThoai: '',
         email: '',
-        chuyenMon: '',
-        kinh_nghiem: ''
-      });
-      setEditingId(null);
-      setShowForm(false);
-      loadDoctors();
-    } catch (error) {
-      alert('Lỗi: ' + (error.response?.data?.message || error.message));
+        diaChi: '',
+        soChungChi: '',
+        chuyenKhoaId: '',
+        capHocVan: '',
+        namKinhNghiem: '',
+      })
+      setLoiSuform({})
+      setIdchinh(null)
+      setMoform(false)
+      layDuLieu()
+    } catch (err) {
+      console.error('Error:', err.response?.data)
+      const errorMessage = err.response?.data?.message || 'Lỗi khi lưu thông tin bác sĩ'
+      showError(errorMessage)
+    } finally {
+      setSubmitting(false)
     }
-  };
+  }
 
-  const handleEditDoctor = (doctor) => {
-    setEditingId(doctor.BacSiId);
-    setFormData({
-      hoTen: doctor.NguoiDung?.HoTen || '',
-      soDienThoai: doctor.NguoiDung?.DienThoai || '',
-      email: doctor.NguoiDung?.Email || '',
-      chuyenMon: doctor.ChuyenMon || '',
-      kinh_nghiem: doctor.KinhNghiem || ''
-    });
-    setShowForm(true);
-  };
+  const xulyChinhsua = (bacsi) => {
+    setDulieuform({
+      hoTen: bacsi.NguoiDung?.HoTen || '',
+      dienThoai: bacsi.NguoiDung?.DienThoai || '',
+      email: bacsi.NguoiDung?.Email || '',
+      diaChi: bacsi.NguoiDung?.DiaChi || '',
+      soChungChi: bacsi.SoChungChi || '',
+      chuyenKhoaId: bacsi.BacSiChuyenKhoas?.[0]?.ChuyenKhoaId || '',
+      capHocVan: bacsi.CapHocVan || '',
+      namKinhNghiem: bacsi.NamKinhNghiem || '',
+    })
+    setLoiSuform({})
+    setIdchinh(bacsi.BacSiId)
+    setMoform(true)
+  }
 
-  const handleDeleteDoctor = async (id) => {
-    if (window.confirm('Bạn chắc chắn muốn xóa bác sĩ này?')) {
-      try {
-        await bacSiAPI.delete(id);
-        loadDoctors();
-      } catch (error) {
-        alert('Lỗi xóa bác sĩ: ' + error.message);
-      }
+  const xulyXoa = async (id) => {
+    if (!window.confirm('Bạn có chắc muốn xóa bác sĩ này?')) return
+
+    try {
+      await apiClient.delete(`/bacsi/${id}`)
+      success('Xóa bác sĩ thành công')
+      layDuLieu()
+    } catch (err) {
+      showError('Không thể xóa bác sĩ')
+      console.error(err)
     }
-  };
+  }
 
-  const handleCancelForm = () => {
-    setEditingId(null);
-    setShowForm(false);
-    setFormData({
+  const xulyHuy = () => {
+    setMoform(false)
+    setIdchinh(null)
+    setDulieuform({
       hoTen: '',
-      soDienThoai: '',
+      dienThoai: '',
       email: '',
-      chuyenMon: '',
-    });
-  };
+      diaChi: '',
+      soChungChi: '',
+      chuyenKhoaId: '',
+      capHocVan: '',
+      namKinhNghiem: '',
+    })
+    setLoiSuform({})
+  }
+
+  const layTenChuyenKhoa = (id) => {
+    const chuyenkhoa = danhsachchuyenkhoa.find(s => s.ChuyenKhoaId === id)
+    return chuyenkhoa ? chuyenkhoa.TenChuyenKhoa : '-'
+  }
+
+  if (loading) return <div className="loading">Đang tải...</div>
 
   return (
-    <Layout>
-      <div className="page-container">
-        <div className="page-header">
-          <h1>Quản Lý Bác Sĩ</h1>
-        </div>
+    <div className="list-page">
+      <div className="page-header">
+        <h1>Quản Lý Bác Sĩ</h1>
+        {laAdmin && (
+          <button
+            className="btn-primary"
+            onClick={() => {
+              setMoform(true)
+              setLoiSuform({})
+            }}
+            disabled={moform}
+          >
+            ➕ Thêm bác sĩ
+          </button>
+        )}
+      </div>
 
-        <section className="content-section">
-          <div className="section-header">
-            <h2>Danh Sách Bác Sĩ</h2>
-            <div className="header-actions">
-              <input
-                type="text"
-                placeholder="Tìm kiếm bác sĩ..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="search-input"
-              />
-              <button 
-                onClick={() => setShowForm(!showForm)} 
-                className="btn-add"
-              >
-                {showForm ? 'Đóng' : '+ Thêm Bác Sĩ'}
-              </button>
-            </div>
-          </div>
-
-          {showForm && (
-            <form onSubmit={handleAddDoctor} className="add-doctor-form">
+      {moform && laAdmin && (
+        <div className="form-container">
+          <h2>{idchinh ? 'Sửa thông tin bác sĩ' : 'Thêm bác sĩ mới'}</h2>
+          <form onSubmit={xulyGuiForm}>
+            <div className="form-row">
               <div className="form-group">
-                <label>Họ Tên</label>
+                <label>Họ tên *</label>
                 <input
                   type="text"
                   name="hoTen"
-                  value={formData.hoTen}
-                  onChange={handleFormChange}
-                  required
+                  value={dulieuform.hoTen}
+                  onChange={xulyThayDoiInput}
+                  placeholder="Nhập họ tên"
                 />
+                {loisuform.hoTen && <span className="field-error">{loisuform.hoTen}</span>}
               </div>
+
               <div className="form-group">
-                <label>Số Điện Thoại</label>
+                <label>Số điện thoại *</label>
                 <input
-                  type="text"
-                  name="soDienThoai"
-                  value={formData.soDienThoai}
-                  onChange={handleFormChange}
+                  type="tel"
+                  name="dienThoai"
+                  value={dulieuform.dienThoai}
+                  onChange={xulyThayDoiInput}
+                  placeholder="Nhập số điện thoại"
                 />
+                {loisuform.dienThoai && <span className="field-error">{loisuform.dienThoai}</span>}
               </div>
+            </div>
+
+            <div className="form-row">
               <div className="form-group">
                 <label>Email</label>
                 <input
                   type="email"
                   name="email"
-                  value={formData.email}
-                  onChange={handleFormChange}
+                  value={dulieuform.email}
+                  onChange={xulyThayDoiInput}
+                  placeholder="Nhập email"
                 />
+                {loisuform.email && <span className="field-error">{loisuform.email}</span>}
               </div>
+
               <div className="form-group">
-                <label>Chuyên Môn</label>
+                <label>Số chứng chỉ *</label>
                 <input
                   type="text"
-                  name="chuyenMon"
-                  value={formData.chuyenMon}
-                  onChange={handleFormChange}
+                  name="soChungChi"
+                  value={dulieuform.soChungChi}
+                  onChange={xulyThayDoiInput}
+                  placeholder="Nhập số chứng chỉ"
+                />
+                {loisuform.soChungChi && <span className="field-error">{loisuform.soChungChi}</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Chuyên khoa *</label>
+                <select
+                  name="chuyenKhoaId"
+                  value={dulieuform.chuyenKhoaId}
+                  onChange={xulyThayDoiInput}
+                >
+                  <option value="">-- Chọn chuyên khoa --</option>
+                  {danhsachchuyenkhoa.map((s) => (
+                    <option key={s.ChuyenKhoaId} value={s.ChuyenKhoaId}>
+                      {s.TenChuyenKhoa}
+                    </option>
+                  ))}
+                </select>
+                {loisuform.chuyenKhoaId && <span className="field-error">{loisuform.chuyenKhoaId}</span>}
+              </div>
+
+              <div className="form-group">
+                <label>Cấp học vấn</label>
+                <input
+                  type="text"
+                  name="capHocVan"
+                  value={dulieuform.capHocVan}
+                  onChange={xulyThayDoiInput}
+                  placeholder="vd: Tiến sĩ, Thạc sĩ"
                 />
               </div>
+            </div>
+
+            <div className="form-row">
               <div className="form-group">
-                <label>Kinh Nghiệm (năm)</label>
+                <label>Năm kinh nghiệm</label>
                 <input
                   type="number"
-                  name="kinh_nghiem"
-                  value={formData.kinh_nghiem}
-                  onChange={handleFormChange}
+                  name="namKinhNghiem"
+                  value={dulieuform.namKinhNghiem}
+                  onChange={xulyThayDoiInput}
+                  placeholder="vd: 10"
                   min="0"
+                  max="60"
                 />
               </div>
-              <div className="form-actions">
-                <button type="submit" className="btn-submit">
-                  {editingId ? 'Cập Nhật' : 'Thêm Bác Sĩ'}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={handleCancelForm}
-                  className="btn-cancel"
-                >
-                  Hủy
-                </button>
-              </div>
-            </form>
-          )}
 
-          {loading ? (
-            <Loading />
-          ) : filteredDoctors.length === 0 ? (
-            <p>{searchTerm ? 'Không tìm thấy bác sĩ phù hợp' : 'Không có bác sĩ nào'}</p>
-          ) : (
-            <table className="doctors-table">
-              <thead>
-                <tr>
-                  <th>STT</th>
-                  <th>Họ Tên</th>
-                  <th>Số Điện Thoại</th>
-                  <th>Email</th>
-                  <th>Chuyên Môn</th>
-                  <th>Kinh Nghiệm</th>
-                  <th>Hành Động</th>
+              <div className="form-group">
+                <label>Địa chỉ</label>
+                <input
+                  type="text"
+                  name="diaChi"
+                  value={dulieuform.diaChi}
+                  onChange={xulyThayDoiInput}
+                  placeholder="Nhập địa chỉ"
+                />
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={submitting}
+              >
+                {submitting ? 'Đang lưu...' : 'Lưu'}
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={xulyHuy}
+                disabled={submitting}
+              >
+                Hủy
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className="table-container">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Họ tên</th>
+              <th>Số điện thoại</th>
+              <th>Email</th>
+              <th>Chuyên khoa</th>
+              <th>Cấp học vấn</th>
+              <th>Kinh nghiệm (năm)</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {danhsachbacsi.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="text-center">Chưa có dữ liệu</td>
+              </tr>
+            ) : (
+              danhsachbacsi.map((bacsi) => (
+                <tr key={bacsi.BacSiId}>
+                  <td>{bacsi.BacSiId}</td>
+                  <td>{bacsi.NguoiDung?.HoTen || '-'}</td>
+                  <td>{bacsi.NguoiDung?.DienThoai || '-'}</td>
+                  <td>{bacsi.NguoiDung?.Email || '-'}</td>
+                  <td>
+                    {bacsi.BacSiChuyenKhoas?.[0]?.ChuyenKhoa?.TenChuyenKhoa ||
+                      (bacsi.BacSiChuyenKhoas?.[0]
+                        ? layTenChuyenKhoa(bacsi.BacSiChuyenKhoas[0].ChuyenKhoaId)
+                        : '-')}
+                  </td>
+                  <td>{bacsi.CapHocVan || '-'}</td>
+                  <td>{bacsi.NamKinhNghiem || '-'}</td>
+                  <td>
+                    {laAdmin ? (
+                      <>
+                        <button
+                          className="btn-edit btn-success"
+                          onClick={() => xulyChinhsua(bacsi)}
+                          disabled={moform}
+                        >
+                          Cập nhật
+                        </button>
+                        <button
+                          className="btn-delete"
+                          onClick={() => xulyXoa(bacsi.BacSiId)}
+                          disabled={moform}
+                        >
+                          Xóa
+                        </button>
+                      </>
+                    ) : (
+                      <span style={{ color: '#999' }}>Không có quyền</span>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {doctors.map((doctor, index) => (
-                  <tr key={doctor.BacSiId}>
-                    <td>{index + 1}</td>
-                    <td>{doctor.NguoiDung?.HoTen}</td>
-                    <td>{doctor.NguoiDung?.DienThoai}</td>
-                    <td>{doctor.NguoiDung?.Email}</td>
-                    <td>{doctor.ChuyenMon}</td>
-                    <td>{doctor.KinhNghiem} năm</td>
-                    <td>
-                      <button 
-                        onClick={() => handleEditDoctor(doctor)}
-                        className="btn-edit"
-                      >
-                        Sửa
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteDoctor(doctor.BacSiId)}
-                        className="btn-delete"
-                      >
-                        Xóa
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-    </Layout>
-  );
+    </div>
+  )
 }

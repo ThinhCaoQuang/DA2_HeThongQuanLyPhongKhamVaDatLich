@@ -1,141 +1,218 @@
-const { BenhNhan } = require('../models');
+const { BenhNhan, LichKham, ChuyenKhoa, BacSi } = require('../models');
+const { Op } = require('sequelize');
 
-// GET all bệnh nhân
-exports.getAll = async (req, res) => {
-  try {
-    const benhNhanList = await BenhNhan.findAll({
-      order: [['CreatedAt', 'DESC']]
-    });
-    res.json({
-      success: true,
-      data: benhNhanList
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi lấy danh sách bệnh nhân',
-      error: error.message
-    });
-  }
+// Generate patient code
+const generateMaBenhNhan = async () => {
+  const lastPatient = await BenhNhan.findOne({
+    order: [['BenhNhanId', 'DESC']]
+  });
+
+  const nextNumber = (lastPatient?.BenhNhanId || 0) + 1;
+  return `P${String(nextNumber).padStart(4, '0')}`;
 };
 
-// GET bệnh nhân by ID
-exports.getById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const benhNhan = await BenhNhan.findByPk(id);
-    
-    if (!benhNhan) {
-      return res.status(404).json({
+const BenhNhanController = {
+  // Get all patients
+  getAll: async (req, res) => {
+    try {
+      const { page = 1, limit = 10, search = '' } = req.query;
+      const offset = (page - 1) * limit;
+
+      const where = {};
+      if (search) {
+        where[Op.or] = [
+          { HoTen: { [Op.like]: `%${search}%` } },
+          { DienThoai: { [Op.like]: `%${search}%` } },
+          { Email: { [Op.like]: `%${search}%` } },
+          { MaBenhNhan: { [Op.like]: `%${search}%` } }
+        ];
+      }
+
+      const { count, rows } = await BenhNhan.findAndCountAll({
+        where,
+        offset,
+        limit: parseInt(limit),
+        order: [['BenhNhanId', 'DESC']]
+      });
+
+      res.status(200).json({
+        success: true,
+        data: rows,
+        pagination: {
+          total: count,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(count / limit)
+        }
+      });
+    } catch (error) {
+      console.error('Get all patients error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Bệnh nhân không tìm thấy'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    res.json({
-      success: true,
-      data: benhNhan
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi lấy thông tin bệnh nhân',
-      error: error.message
-    });
-  }
-};
+  // Get patient by ID
+  getById: async (req, res) => {
+    try {
+      const { id } = req.params;
 
-// CREATE bệnh nhân
-exports.create = async (req, res) => {
-  try {
-    const { MaBenhNhan, HoTen, NgaySinh, GioiTinh, DienThoai, Email, DiaChi, ThanhPho } = req.body;
+      const patient = await BenhNhan.findOne({
+        where: { BenhNhanId: id },
+        include: [
+          {
+            model: LichKham,
+            attributes: ['LichKhamId', 'MaLichKham', 'ThoiGianBatDau', 'ThoiGianKetThuc', 'TrieuChung', 'TrangThai'],
+            include: [
+              { model: BacSi, attributes: ['BacSiId', 'NguoiDungId'] },
+              { model: ChuyenKhoa, attributes: ['ChuyenKhoaId', 'TenChuyenKhoa'] }
+            ]
+          }
+        ]
+      });
 
-    // Validation
-    if (!MaBenhNhan || !HoTen) {
-      return res.status(400).json({
+      if (!patient) {
+        return res.status(404).json({
+          success: false,
+          message: 'Bệnh nhân không tìm thấy'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: patient
+      });
+    } catch (error) {
+      console.error('Get patient error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Mã bệnh nhân và họ tên là bắt buộc'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    const benhNhan = await BenhNhan.create({
-      MaBenhNhan,
-      HoTen,
-      NgaySinh,
-      GioiTinh,
-      DienThoai,
-      Email,
-      DiaChi,
-      ThanhPho
-    });
+  // Create patient
+  create: async (req, res) => {
+    try {
+      const { hoTen, ngaySinh, gioiTinh, dienThoai, email, diaChi, thanhPho, tieuSuBenhLy, diUng, cccd } = req.body;
 
-    res.status(201).json({
-      success: true,
-      message: 'Tạo bệnh nhân thành công',
-      data: benhNhan
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi tạo bệnh nhân',
-      error: error.message
-    });
-  }
-};
+      if (!hoTen || !dienThoai) {
+        return res.status(400).json({
+          success: false,
+          message: 'Họ tên và số điện thoại không được để trống'
+        });
+      }
 
-// UPDATE bệnh nhân
-exports.update = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const benhNhan = await BenhNhan.findByPk(id);
+      // Generate patient code
+      const maBenhNhan = await generateMaBenhNhan();
 
-    if (!benhNhan) {
-      return res.status(404).json({
+      const patient = await BenhNhan.create({
+        MaBenhNhan: maBenhNhan,
+        HoTen: hoTen,
+        NgaySinh: ngaySinh,
+        GioiTinh: gioiTinh || 'Khac',
+        DienThoai: dienThoai,
+        Email: email,
+        DiaChi: diaChi,
+        ThanhPho: thanhPho,
+        TienSuBenhLy: tieuSuBenhLy,
+        DiUng: diUng,
+        CCCD: cccd,
+        TrangThai: 'HoatDong'
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Tạo bệnh nhân thành công',
+        data: patient
+      });
+    } catch (error) {
+      console.error('Create patient error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Bệnh nhân không tìm thấy'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    await benhNhan.update(req.body);
+  // Update patient
+  update: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { hoTen, ngaySinh, gioiTinh, dienThoai, email, diaChi, thanhPho, tieuSuBenhLy, diUng, trangThai, cccd } = req.body;
 
-    res.json({
-      success: true,
-      message: 'Cập nhật bệnh nhân thành công',
-      data: benhNhan
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi cập nhật bệnh nhân',
-      error: error.message
-    });
-  }
-};
+      const patient = await BenhNhan.findByPk(id);
 
-// DELETE bệnh nhân
-exports.delete = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const benhNhan = await BenhNhan.findByPk(id);
+      if (!patient) {
+        return res.status(404).json({
+          success: false,
+          message: 'Bệnh nhân không tìm thấy'
+        });
+      }
 
-    if (!benhNhan) {
-      return res.status(404).json({
+      await patient.update({
+        HoTen: hoTen || patient.HoTen,
+        NgaySinh: ngaySinh || patient.NgaySinh,
+        GioiTinh: gioiTinh || patient.GioiTinh,
+        DienThoai: dienThoai || patient.DienThoai,
+        Email: email || patient.Email,
+        DiaChi: diaChi || patient.DiaChi,
+        ThanhPho: thanhPho || patient.ThanhPho,
+        TienSuBenhLy: tieuSuBenhLy !== undefined ? tieuSuBenhLy : patient.TienSuBenhLy,
+        DiUng: diUng !== undefined ? diUng : patient.DiUng,
+        CCCD: cccd || patient.CCCD,
+        TrangThai: trangThai || patient.TrangThai
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Cập nhật bệnh nhân thành công',
+        data: patient
+      });
+    } catch (error) {
+      console.error('Update patient error:', error);
+      res.status(500).json({
         success: false,
-        message: 'Bệnh nhân không tìm thấy'
+        message: 'Lỗi máy chủ',
+        error: error.message
       });
     }
+  },
 
-    await benhNhan.destroy();
+  // Delete patient
+  delete: async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    res.json({
-      success: true,
-      message: 'Xóa bệnh nhân thành công'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi khi xóa bệnh nhân',
-      error: error.message
-    });
+      const patient = await BenhNhan.findByPk(id);
+
+      if (!patient) {
+        return res.status(404).json({
+          success: false,
+          message: 'Bệnh nhân không tìm thấy'
+        });
+      }
+
+      await patient.destroy();
+
+      res.status(200).json({
+        success: true,
+        message: 'Xóa bệnh nhân thành công'
+      });
+    } catch (error) {
+      console.error('Delete patient error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ',
+        error: error.message
+      });
+    }
   }
 };
+
+module.exports = BenhNhanController;

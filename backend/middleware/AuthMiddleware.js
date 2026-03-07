@@ -1,57 +1,89 @@
 const jwt = require('jsonwebtoken');
+const { BacSi, TaiKhoan } = require('../models');
 
-// Middleware xác thực JWT token
-exports.authenticateToken = (req, res, next) => {
-  try {
-    // Lấy token từ header Authorization
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+const AuthMiddleware = {
+  // Verify JWT token
+  verifyToken: async (req, res, next) => {
+    try {
+      const token = req.headers.authorization?.split(' ')[1];
 
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Token không được cung cấp'
-      });
-    }
-
-    // Xác minh token
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-      if (err) {
-        return res.status(403).json({
+      if (!token) {
+        return res.status(401).json({
           success: false,
-          message: 'Token không hợp lệ hoặc hết hạn'
+          message: 'Token không được cung cấp'
         });
       }
 
-      req.user = user;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+
+      // If user is BacSi, fetch their BacSiId from database
+      if (decoded.role === 'BacSi') {
+        try {
+          const account = await TaiKhoan.findByPk(decoded.id);
+          if (account && account.NguoiDungId) {
+            const doctor = await BacSi.findOne({
+              where: { NguoiDungId: account.NguoiDungId }
+            });
+            if (doctor) {
+              req.user.BacSiId = doctor.BacSiId;
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching BacSiId:', error);
+          // Continue without BacSiId if there's an error
+        }
+      }
+
       next();
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi xác thực',
-      error: error.message
-    });
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Token đã hết hạn'
+        });
+      }
+      return res.status(401).json({
+        success: false,
+        message: 'Token không hợp lệ'
+      });
+    }
+  },
+
+  // Check user role
+  checkRole: (roles) => {
+    return (req, res, next) => {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Không được xác thực'
+        });
+      }
+
+      if (!roles.includes(req.user.role)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền truy cập tài nguyên này'
+        });
+      }
+
+      next();
+    };
+  },
+
+  // Optional token (doesn't fail if no token)
+  optionalToken: (req, res, next) => {
+    try {
+      const token = req.headers.authorization?.split(' ')[1];
+      if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+      }
+      next();
+    } catch (error) {
+      next();
+    }
   }
 };
 
-// Middleware kiểm tra quyền (Role-based)
-exports.authorizeRole = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Token không được cung cấp'
-      });
-    }
-
-    if (!roles.includes(req.user.VaiTro)) {
-      return res.status(403).json({
-        success: false,
-        message: `Bạn không có quyền. Yêu cầu vai trò: ${roles.join(', ')}`
-      });
-    }
-
-    next();
-  };
-};
+module.exports = AuthMiddleware;

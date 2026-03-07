@@ -1,0 +1,133 @@
+@baseUrl = http://localhost:5000
+
+### 1. Register LeTan
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "letan001",
+  "password": "Letan@123",
+  "hoTen": "Nguyễn Thị Lê Tân",
+  "email": "letan@phongkham.vn",
+  "dienThoai": "0912345678",
+  "vaiTro": "LeTan"
+}
+
+### 2. Login LeTan
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "letan001",
+  "password": "Letan@123"
+}
+
+### 3. Create Patient
+POST {{baseUrl}}/api/benhnhan
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "hoTen": "Phạm Văn An",
+  "ngaySinh": "1990-05-15",
+  "gioiTinh": "Nam",
+  "dienThoai": "0901234567",
+  "email": "pva@example.com",
+  "diaChi": "123 Đường A",
+  "thanhPho": "Hồ Chí Minh",
+  "tieuSuBenhLy": "Tăng huyết áp",
+  "diUng": "Penicillin"
+}
+
+### 4. Get All Patients
+GET {{baseUrl}}/api/benhnhan?page=1&limit=10
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 5. Create Specialty
+POST {{baseUrl}}/api/chuyenkhoa
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "tenChuyenKhoa": "Tim mạch",
+  "moTa": "Chuyên khoa chẩn đoán và điều trị bệnh tim mạch"
+}
+
+### 6. Create Doctor
+POST {{baseUrl}}/api/bacsi
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "hoTen": "Nguyễn Minh Tú",
+  "gioiTinh": "Nữ",
+  "dienThoai": "0912888888",
+  "email": "nmt@phongkham.vn",
+  "soChungChi": "BS12345",
+  "capHocVan": "Bác sĩ",
+  "namKinhNghiem": 8
+}
+
+### 7. Add Specialty to Doctor
+POST {{baseUrl}}/api/bacsi/1/specialty
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "chuyenKhoaId": 1,
+  "laChuyenMonChinh": true
+}
+
+### 8. Create Doctor Schedule
+POST {{baseUrl}}/api/lichlamviec
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "bacSiId": 1,
+  "ngayLamViec": "2026-02-28",
+  "caLam": "Sang",
+  "gioBatDau": "08:00",
+  "gioKetThuc": "12:00",
+  "soBenhNhanToiDa": 15
+}
+
+### 9. Create Appointment
+POST {{baseUrl}}/api/lichkham
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "benhNhanId": 1,
+  "bacSiId": 1,
+  "chuyenKhoaId": 1,
+  "ngayKham": "2026-02-28",
+  "caKham": "Sang",
+  "gioKham": "09:00",
+  "trieuChung": "Đau ngực, khó thở",
+  "ghiChu": "Cần kiểm tra tổng quát"
+}
+
+### 10. Confirm Appointment
+POST {{baseUrl}}/api/lichkham/1/confirm
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "bacSiId": 1
+}
+
+### 11. Create Medical Record
+POST {{baseUrl}}/api/hosokhambenh
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "lichKhamId": 1,
+  "benhNhanId": 1,
+  "bacSiId": 1,
+  "trieuChung": "Đau ngực kéo dài 2 tuần",
+  "chanDoan": "Đặc hữu tính chứng",
+  "keHoachDieuTri": "Thuốc hạ huyết áp + tập thể dục",
+  "ketLuan": "Khỏe mạnh, tái khám sau 1 tháng"
+}

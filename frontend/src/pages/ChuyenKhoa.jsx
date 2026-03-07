@@ -1,225 +1,68 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { chuyenKhoaAPI } from '../services/api';
-import Layout from '../components/Layout';
-import Loading from '../components/Loading';
-import '../styles/ChuyenKhoa.css';
+import { useState, useEffect } from 'react'
+import apiClient from '../services/api'
+import '../styles/list.css'
 
 export default function ChuyenKhoa() {
-  const navigate = useNavigate();
-  const [specialties, setSpecialties] = useState([]);
-  const [filteredSpecialties, setFilteredSpecialties] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    tenChuyenKhoa: '',
-    moTa: ''
-  });
+  const [danhsachchuyenkhoa, setDanhSachChuyenKhoa] = useState([])
+  const [dangta, setDangTa] = useState(true)
+  const [loi, setLoi] = useState('')
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      navigate('/login');
-      return;
-    }
-    loadSpecialties();
-  }, []);
+    layDanhSachChuyenKhoa()
+  }, [])
 
-  const loadSpecialties = async () => {
+  const layDanhSachChuyenKhoa = async () => {
     try {
-      setLoading(true);
-      const response = await chuyenKhoaAPI.getAll();
-      const data = response.data?.data || response.data || [];
-      const specialtiesData = Array.isArray(data) ? data : [];
-      setSpecialties(specialtiesData);
-      setFilteredSpecialties(specialtiesData);
-    } catch (error) {
-      console.error('Lỗi tải danh sách chuyên khoa:', error);
-      setSpecialties([]);
-      setFilteredSpecialties([]);
+      setDangTa(true)
+      const response = await apiClient.get('/chuyenkhoa')
+      setDanhSachChuyenKhoa(response.data.data || [])
+      setLoi('')
+    } catch (err) {
+      setLoi('Không thể tải danh sách chuyên khoa')
+      console.error(err)
     } finally {
-      setLoading(false);
+      setDangTa(false)
     }
-  };
+  }
 
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    
-    if (term === '') {
-      setFilteredSpecialties(specialties);
-    } else {
-      const filtered = specialties.filter(specialty =>
-        specialty.TenChuyenKhoa?.toLowerCase().includes(term) ||
-        specialty.MoTa?.toLowerCase().includes(term)
-      );
-      setFilteredSpecialties(filtered);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        await chuyenKhoaAPI.update(editingId, formData);
-      } else {
-        await chuyenKhoaAPI.create(formData);
-      }
-      loadSpecialties();
-      handleCancelForm();
-    } catch (error) {
-      alert('Lỗi: ' + (error.response?.data?.message || error.message));
-    }
-  };
-
-  const handleEditSpecialty = (specialty) => {
-    setEditingId(specialty.MaChuyenKhoa);
-    setFormData({
-      tenChuyenKhoa: specialty.TenChuyenKhoa || '',
-      moTa: specialty.MoTa || ''
-    });
-    setShowForm(true);
-  };
-
-  const handleDeleteSpecialty = async (id) => {
-    if (window.confirm('Bạn chắc chắn muốn xóa chuyên khoa này?')) {
-      try {
-        await chuyenKhoaAPI.delete(id);
-        loadSpecialties();
-      } catch (error) {
-        alert('Lỗi xóa chuyên khoa: ' + error.message);
-      }
-    }
-  };
-
-  const handleCancelForm = () => {
-    setEditingId(null);
-    setShowForm(false);
-    setFormData({
-      tenChuyenKhoa: '',
-      moTa: ''
-    });
-  };
+  if (dangta) return <div className="loading">Đang tải...</div>
 
   return (
-    <Layout>
-      <div className="page-container">
-        <div className="page-header">
-          <h1>Quản Lý Chuyên Khoa</h1>
-        </div>
-
-        <section className="content-section">
-          <div className="section-header">
-            <h2>Danh Sách Chuyên Khoa</h2>
-            <div className="header-actions">
-              <input
-                type="text"
-                placeholder="Tìm kiếm chuyên khoa..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="search-input"
-              />
-              <button 
-                onClick={() => setShowForm(!showForm)} 
-                className="btn-add"
-              >
-                {showForm ? 'Đóng' : '+ Thêm Chuyên Khoa'}
-              </button>
-            </div>
-          </div>
-
-          {showForm && (
-            <form onSubmit={handleSubmit} className="specialty-form">
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Tên Chuyên Khoa *</label>
-                  <input
-                    type="text"
-                    name="tenChuyenKhoa"
-                    value={formData.tenChuyenKhoa}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="VD: Tim mạch, Nội khoa, Nhi..."
-                  />
-                </div>
-
-                <div className="form-group full-width">
-                  <label>Mô Tả</label>
-                  <textarea
-                    name="moTa"
-                    value={formData.moTa}
-                    onChange={handleInputChange}
-                    rows="3"
-                    placeholder="Nhập mô tả về chuyên khoa..."
-                  />
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button type="submit" className="btn-submit">
-                  {editingId ? 'Cập Nhật' : 'Thêm Mới'}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={handleCancelForm} 
-                  className="btn-cancel"
-                >
-                  Hủy
-                </button>
-              </div>
-            </form>
-          )}
-
-          {loading ? (
-            <Loading />
-          ) : filteredSpecialties.length === 0 ? (
-            <p>{searchTerm ? 'Không tìm thấy chuyên khoa phù hợp' : 'Không có chuyên khoa nào'}</p>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Mã</th>
-                  <th>Tên Chuyên Khoa</th>
-                  <th>Mô Tả</th>
-                  <th>Thao Tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSpecialties.map((specialty) => (
-                  <tr key={specialty.MaChuyenKhoa}>
-                    <td>{specialty.MaChuyenKhoa}</td>
-                    <td className="specialty-name">{specialty.TenChuyenKhoa}</td>
-                    <td className="description">{specialty.MoTa || '—'}</td>
-                    <td className="actions">
-                      <button
-                        onClick={() => handleEditSpecialty(specialty)}
-                        className="btn-edit"
-                      >
-                        Sửa
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSpecialty(specialty.MaChuyenKhoa)}
-                        className="btn-delete"
-                      >
-                        Xóa
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
+    <div className="list-page">
+      <div className="page-header">
+        <h1>Danh Sách Chuyên Khoa</h1>
       </div>
-    </Layout>
-  );
+
+      {loi && <div className="alert alert-danger">{loi}</div>}
+
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã Chuyên Khoa</th>
+              <th>Tên Chuyên Khoa</th>
+              <th>Mô Tả</th>
+            </tr>
+          </thead>
+          <tbody>
+            {danhsachchuyenkhoa.length > 0 ? (
+              danhsachchuyenkhoa.map((chuyenkhoa) => (
+                <tr key={chuyenkhoa.ChuyenKhoaId}>
+                  <td>{chuyenkhoa.ChuyenKhoaId}</td>
+                  <td>{chuyenkhoa.TenChuyenKhoa || '-'}</td>
+                  <td>{chuyenkhoa.MoTa || '-'}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3" className="text-center">
+                  Không có chuyên khoa nào
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }

@@ -1,0 +1,784 @@
+{
+  "info": {
+    "name": "Clinic Management System API",
+    "description": "Complete API testing collection for Quản Lý Phòng Khám",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register - LeTan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"letan001\",\n  \"password\": \"Letan@123\",\n  \"hoTen\": \"Nguyễn Thị Lê Tân\",\n  \"email\": \"letan@phongkham.vn\",\n  \"dienThoai\": \"0912345678\",\n  \"vaiTro\": \"LeTan\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register - BacSi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"bacsi001\",\n  \"password\": \"BacSi@123\",\n  \"hoTen\": \"Trần Văn Bác Sĩ\",\n  \"email\": \"bacsi@phongkham.vn\",\n  \"dienThoai\": \"0987654321\",\n  \"vaiTro\": \"BacSi\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login - LeTan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"letan001\",\n  \"password\": \"Letan@123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login - BacSi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"bacsi001\",\n  \"password\": \"BacSi@123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Current User (Protected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE",
+                "description": "Replace with token from login response"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/auth/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Bệnh Nhân (Patients)",
+      "item": [
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hoTen\": \"Phạm Văn An\",\n  \"ngaySinh\": \"1990-05-15\",\n  \"gioiTinh\": \"Nam\",\n  \"dienThoai\": \"0901234567\",\n  \"email\": \"pva@example.com\",\n  \"diaChi\": \"123 Đường A, Quận 1\",\n  \"thanhPho\": \"Hồ Chí Minh\",\n  \"tieuSuBenhLy\": \"Tăng huyết áp\",\n  \"diUng\": \"Penicillin\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/benhnhan",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "benhnhan"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/benhnhan?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "benhnhan"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Patient by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/benhnhan/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "benhnhan",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Patient",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hoTen\": \"Phạm Văn An (Updated)\",\n  \"dienThoai\": \"0901234568\",\n  \"diaChi\": \"456 Đường B, Quận 2\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/benhnhan/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "benhnhan",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍⚕️ Bác Sĩ (Doctors)",
+      "item": [
+        {
+          "name": "Create Doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hoTen\": \"Nguyễn Minh Tú\",\n  \"gioiTinh\": \"Nữ\",\n  \"dienThoai\": \"0912888888\",\n  \"email\": \"nmt@phongkham.vn\",\n  \"diaChi\": \"789 Đường C\",\n  \"soChungChi\": \"BS12345\",\n  \"capHocVan\": \"Bác sĩ\",\n  \"namKinhNghiem\": 8,\n  \"tieuSu\": \"Chuyên khoa Tim mạch\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/bacsi",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "bacsi"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Doctors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/bacsi?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "bacsi"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Specialty to Doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chuyenKhoaId\": 1,\n  \"laChuyenMonChinh\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/bacsi/1/specialty",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "bacsi",
+                "1",
+                "specialty"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Chuyên Khoa (Specialties)",
+      "item": [
+        {
+          "name": "Create Specialty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenChuyenKhoa\": \"Tim mạch\",\n  \"moTa\": \"Chuyên khoa chẩn đoán và điều trị bệnh tim mạch\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/chuyenkhoa",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chuyenkhoa"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Specialties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chuyenkhoa?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chuyenkhoa"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Lịch Khám (Appointments)",
+      "item": [
+        {
+          "name": "Create Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"benhNhanId\": 1,\n  \"bacSiId\": 1,\n  \"chuyenKhoaId\": 1,\n  \"ngayKham\": \"2026-02-28\",\n  \"caKham\": \"Sang\",\n  \"gioKham\": \"09:00\",\n  \"trieuChung\": \"Đau ngực, khó thở\",\n  \"ghiChu\": \"Cần kiểm tra tổng quát\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/lichkham",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "lichkham"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Appointments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/lichkham?page=1&limit=10&status=ChoXacNhan",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "lichkham"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "ChoXacNhan"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bacSiId\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/lichkham/1/confirm",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "lichkham",
+                "1",
+                "confirm"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lyDoHuy\": \"Bệnh nhân có công việc bất ngờ\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/lichkham/1/cancel",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "lichkham",
+                "1",
+                "cancel"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Appointment (BacSi)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/lichkham/1/complete",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "lichkham",
+                "1",
+                "complete"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⏰ Lịch Làm Việc (Doctor Schedule)",
+      "item": [
+        {
+          "name": "Create Doctor Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bacSiId\": 1,\n  \"ngayLamViec\": \"2026-02-28\",\n  \"caLam\": \"Sang\",\n  \"gioBatDau\": \"08:00\",\n  \"gioKetThuc\": \"12:00\",\n  \"soBenhNhanToiDa\": 15\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/lichlamviec",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "lichlamviec"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Doctor Schedules",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/lichlamviec?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "lichlamviec"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Hồ Sơ Khám Bệnh (Medical Records)",
+      "item": [
+        {
+          "name": "Create Medical Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lichKhamId\": 1,\n  \"benhNhanId\": 1,\n  \"bacSiId\": 1,\n  \"trieuChung\": \"Đau ngực, khó thở kéo dài 2 tuần\",\n  \"chanDoan\": \"Đặc hữu tính chứng\",\n  \"keHoachDieuTri\": \"Thuốc hạ huyết áp + tập thể dục\",\n  \"ketLuan\": \"Khỏe mạnh, tái khám sau 1 tháng\",\n  \"ghiChu\": \"Tuyệt đối không dùng rượu bia\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/hosokhambenh",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "hosokhambenh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Medical Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_TOKEN_HERE"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/hosokhambenh?page=1&limit=10",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "hosokhambenh"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

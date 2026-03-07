@@ -19,14 +19,8 @@ const LichLamViecBacSi = sequelize.define('LichLamViecBacSi', {
     type: DataTypes.ENUM('Sang', 'Chieu', 'Toi'),
     allowNull: false
   },
-  GioBatDau: {
-    type: DataTypes.TIME,
-    allowNull: false
-  },
-  GioKetThuc: {
-    type: DataTypes.TIME,
-    allowNull: false
-  },
+  GioBatDau: DataTypes.TIME,
+  GioKetThuc: DataTypes.TIME,
   SoBenhNhanToiDa: {
     type: DataTypes.INTEGER,
     defaultValue: 10
@@ -41,18 +35,13 @@ const LichLamViecBacSi = sequelize.define('LichLamViecBacSi', {
   },
   UpdatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    onUpdate: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'LichLamViecBacSi',
   timestamps: false,
-  indexes: [
-    {
-      unique: true,
-      fields: ['BacSiId', 'NgayLamViec', 'CaLam']
-    }
-  ]
+  createdAt: false,
+  updatedAt: false
 });
 
 module.exports = LichLamViecBacSi;

@@ -9,13 +9,10 @@ const ChuyenKhoa = sequelize.define('ChuyenKhoa', {
   },
   TenChuyenKhoa: {
     type: DataTypes.STRING(100),
-    allowNull: false,
-    unique: true
+    unique: true,
+    allowNull: false
   },
-  MoTa: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
+  MoTa: DataTypes.TEXT,
   TrangThai: {
     type: DataTypes.ENUM('HoatDong', 'KhongHoatDong'),
     defaultValue: 'HoatDong'
@@ -26,8 +23,7 @@ const ChuyenKhoa = sequelize.define('ChuyenKhoa', {
   },
   UpdatedAt: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    onUpdate: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
   tableName: 'ChuyenKhoa',
