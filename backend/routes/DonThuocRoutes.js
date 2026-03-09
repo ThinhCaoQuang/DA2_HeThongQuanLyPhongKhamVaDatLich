@@ -16,4 +16,7 @@ router.post('/', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), DonThu
 router.put('/:id', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), DonThuocController.update);
 router.delete('/:id', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), DonThuocController.delete);
 
+// Export
+router.get('/:id/export/pdf', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), DonThuocController.exportToPDF);
+
 module.exports = router;

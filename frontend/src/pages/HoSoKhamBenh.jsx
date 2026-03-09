@@ -11,6 +11,7 @@ export default function HoSoKhamBenh() {
   const { success, error: showError } = useContext(ToastContext)
   const { user } = useContext(AuthContext)
   const [danhsachboso, setDanhSachBoSo] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [dangta, setDangTa] = useState(true)
   const [dangguichitieuthucdung, setDangGuiChiTieuThuCDung] = useState(false)
   const [moform, setMoForm] = useState(false)
@@ -185,25 +186,81 @@ export default function HoSoKhamBenh() {
     setLoiSuForm({})
   }
 
+  // Filter danh sách hồ sơ theo từ khóa tìm kiếm
+  const danhsachloc = danhsachboso.filter(hs => {
+    if (!searchTerm) return true
+    const term = searchTerm.toLowerCase()
+    return (
+      hs.LichKham?.BenhNhan?.HoTen?.toLowerCase().includes(term) ||
+      hs.LichKham?.BenhNhan?.MaBenhNhan?.toLowerCase().includes(term) ||
+      hs.LichKham?.BacSi?.NguoiDung?.HoTen?.toLowerCase().includes(term) ||
+      hs.TrieuChung?.toLowerCase().includes(term) ||
+      hs.ChanDoan?.toLowerCase().includes(term)
+    )
+  })
+
   if (dangta) return <div className="loading">Đang tải...</div>
 
   return (
     <div className="list-page">
       <div className="page-header">
         <h1>Quản Lý Hồ Sơ Khám Bệnh</h1>
-        {coTheTao && (
+        <div style={{ display: 'flex', gap: '10px' }}>
           <button
-            className="btn-primary"
-            onClick={() => {
-              setMoForm(true)
-              setLoiSuForm({})
+            className="btn-success"
+            onClick={async () => {
+              try {
+                const response = await apiClient.get('/hosokhambenh/export/excel', {
+                  responseType: 'blob'
+                });
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `HoSoKhamBenh_${new Date().toISOString().split('T')[0]}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                success('Xuất Excel thành công');
+              } catch (err) {
+                showError('Không thể xuất file Excel');
+              }
             }}
-            disabled={moform}
           >
-            ➕ Thêm hồ sơ khám
+            Xuất Excel
           </button>
-        )}
+          {coTheTao && (
+            <button
+              className="btn-primary"
+              onClick={() => {
+                setMoForm(true)
+                setLoiSuForm({})
+              }}
+              disabled={moform}
+            >
+              Thêm hồ sơ khám
+            </button>
+          )}
+        </div>
       </div>
+
+      {!moform && (
+        <div className="search-bar" style={{ marginBottom: '20px' }}>
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên bệnh nhân, mã bệnh nhân, tên bác sĩ, triệu chứng, chẩn đoán..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 15px',
+              fontSize: '14px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              outline: 'none'
+            }}
+          />
+        </div>
+      )}
 
       {moform && coTheTao && (
         <div className="form-card">
@@ -323,14 +380,14 @@ export default function HoSoKhamBenh() {
             </tr>
           </thead>
           <tbody>
-            {danhsachboso.length === 0 ? (
+            {danhsachloc.length === 0 ? (
               <tr>
                 <td colSpan="6" className="text-center">
-                  Chưa có hồ sơ khám bệnh
+                  {searchTerm ? 'Không tìm thấy hồ sơ nào' : 'Chưa có hồ sơ khám bệnh'}
                 </td>
               </tr>
             ) : (
-              danhsachboso.map((boso) => (
+              danhsachloc.map((boso) => (
                 <tr key={boso.HoSoId}>
                   <td>{boso.MaHoSo}</td>
                   <td>{boso.BenhNhan?.HoTen || '-'}</td>
@@ -382,7 +439,7 @@ export default function HoSoKhamBenh() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Chi tiết hồ sơ khám bệnh</h2>
-              <button className="modal-close" onClick={() => setMoChiTiet(false)}>✕</button>
+              <button className="modal-close" onClick={() => setMoChiTiet(false)}>X</button>
             </div>
             <div className="modal-body">
               <div className="detail-row">

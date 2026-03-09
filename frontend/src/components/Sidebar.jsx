@@ -20,6 +20,7 @@ export default function Sidebar() {
       return [
         ...commonItems,
         { path: '/quick-stats', label: 'Thống Kê Nhanh' },
+        { path: '/cancellation-stats', label: 'Thống Kê Hủy Lịch' },
         { path: '/today-appointments', label: 'Lịch Khám Hôm Nay' },
         { path: '/schedule-coordination', label: 'Điều Phối Lịch' },
         { path: '/patients', label: 'Bệnh Nhân' },
@@ -44,6 +45,7 @@ export default function Sidebar() {
     } else if (userRole === 'QuanTri') {
       return [
         ...commonItems,
+        { path: '/cancellation-stats', label: 'Thống Kê Hủy Lịch' },
         { path: '/patients', label: 'Bệnh Nhân' },
         { path: '/doctors', label: 'Bác Sĩ' },
         { path: '/specialties', label: 'Chuyên Khoa' },

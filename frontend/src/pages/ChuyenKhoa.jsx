@@ -4,6 +4,7 @@ import '../styles/list.css'
 
 export default function ChuyenKhoa() {
   const [danhsachchuyenkhoa, setDanhSachChuyenKhoa] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [dangta, setDangTa] = useState(true)
   const [loi, setLoi] = useState('')
 
@@ -25,6 +26,16 @@ export default function ChuyenKhoa() {
     }
   }
 
+  // Filter danh sách chuyên khoa theo từ khóa tìm kiếm
+  const danhsachloc = danhsachchuyenkhoa.filter(ck => {
+    if (!searchTerm) return true
+    const term = searchTerm.toLowerCase()
+    return (
+      ck.TenChuyenKhoa?.toLowerCase().includes(term) ||
+      ck.MoTa?.toLowerCase().includes(term)
+    )
+  })
+
   if (dangta) return <div className="loading">Đang tải...</div>
 
   return (
@@ -34,6 +45,23 @@ export default function ChuyenKhoa() {
       </div>
 
       {loi && <div className="alert alert-danger">{loi}</div>}
+
+      <div className="search-bar" style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Tìm kiếm theo tên hoặc mô tả chuyên khoa..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px 15px',
+            fontSize: '14px',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            outline: 'none'
+          }}
+        />
+      </div>
 
       <div className="table-container">
         <table>
@@ -45,8 +73,8 @@ export default function ChuyenKhoa() {
             </tr>
           </thead>
           <tbody>
-            {danhsachchuyenkhoa.length > 0 ? (
-              danhsachchuyenkhoa.map((chuyenkhoa) => (
+            {danhsachloc.length > 0 ? (
+              danhsachloc.map((chuyenkhoa) => (
                 <tr key={chuyenkhoa.ChuyenKhoaId}>
                   <td>{chuyenkhoa.ChuyenKhoaId}</td>
                   <td>{chuyenkhoa.TenChuyenKhoa || '-'}</td>
@@ -56,7 +84,7 @@ export default function ChuyenKhoa() {
             ) : (
               <tr>
                 <td colSpan="3" className="text-center">
-                  Không có chuyên khoa nào
+                  {searchTerm ? 'Không tìm thấy chuyên khoa nào' : 'Không có chuyên khoa nào'}
                 </td>
               </tr>
             )}

@@ -90,7 +90,7 @@ export default function ThongKeKham() {
 
         <div className="stat-card">
           <div className="stat-icon" style={{ backgroundColor: '#ffc107' }}>
-            ⭐
+            ⋆
           </div>
           <div className="stat-content">
             <div className="stat-value">{thoikeshowing.xephangtrungbinh.toFixed(1)}</div>

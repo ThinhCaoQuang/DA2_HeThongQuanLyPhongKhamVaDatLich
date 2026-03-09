@@ -9,6 +9,7 @@ const {
 } = require('../models');
 const { Op } = require('sequelize');
 const ThongBaoController = require('./ThongBaoController');
+const ExportService = require('../services/ExportService');
 
 // Generate appointment code
 const generateMaLichKham = async () => {
@@ -366,7 +367,7 @@ const LichKhamController = {
         data: appointment
       });
     } catch (error) {
-      console.error('❌ Confirm appointment error:');
+      console.error('Confirm appointment error:');
       console.error('Message:', error.message);
       console.error('Stack:', error.stack);
       console.error('Full error:', error);
@@ -620,6 +621,58 @@ const LichKhamController = {
       res.status(500).json({
         success: false,
         message: 'Lỗi máy chủ',
+        error: error.message
+      });
+    }
+  },
+
+  // Xuất danh sách lịch khám ra Excel
+  exportToExcel: async (req, res) => {
+    try {
+      const { status, startDate, endDate, bacSiId, chuyenKhoaId } = req.query;
+
+      const where = {};
+      if (status) where.TrangThai = status;
+      if (bacSiId) where.BacSiId = bacSiId;
+      if (chuyenKhoaId) where.ChuyenKhoaId = chuyenKhoaId;
+
+      if (startDate || endDate) {
+        where.ThoiGianBatDau = {};
+        if (startDate) where.ThoiGianBatDau[Op.gte] = new Date(startDate);
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          where.ThoiGianBatDau[Op.lte] = end;
+        }
+      }
+
+      const appointments = await LichKham.findAll({
+        where,
+        include: [
+          { model: BenhNhan, attributes: ['BenhNhanId', 'MaBenhNhan', 'HoTen', 'DienThoai'] },
+          { 
+            model: BacSi,
+            include: [
+              { model: NguoiDung, attributes: ['NguoiDungId', 'HoTen', 'Email'] }
+            ]
+          },
+          { model: ChuyenKhoa, attributes: ['ChuyenKhoaId', 'TenChuyenKhoa'] }
+        ],
+        order: [['ThoiGianBatDau', 'ASC']]
+      });
+
+      const buffer = await ExportService.exportAppointmentsToExcel(appointments, { status, startDate, endDate });
+
+      const filename = `LichKham_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(buffer);
+    } catch (error) {
+      console.error('Export appointments to Excel error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi xuất file Excel',
         error: error.message
       });
     }

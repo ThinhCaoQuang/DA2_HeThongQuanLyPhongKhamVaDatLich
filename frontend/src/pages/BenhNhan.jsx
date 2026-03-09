@@ -7,6 +7,7 @@ import '../styles/list.css'
 export default function BenhNhan() {
   const { success, error: showError } = useContext(ToastContext)
   const [danhsachbenhnhan, setDanhsachbenhnhan] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [moform, setMoform] = useState(false)
@@ -67,7 +68,7 @@ export default function BenhNhan() {
 
     try {
       setSubmitting(true)
-      console.log('📤 Sending data:', dulieuform)
+      console.log('Sending data:', dulieuform)
       
       if (idchinh) {
         await apiClient.put(`/benhnhan/${idchinh}`, dulieuform)
@@ -123,6 +124,18 @@ export default function BenhNhan() {
     setLoiSuForm({})
   }
 
+  // Filter danh sách bệnh nhân theo từ khóa tìm kiếm
+  const danhsachlocbenhnhan = danhsachbenhnhan.filter(bn => {
+    if (!searchTerm) return true
+    const term = searchTerm.toLowerCase()
+    return (
+      bn.HoTen?.toLowerCase().includes(term) ||
+      bn.DienThoai?.includes(term) ||
+      bn.CCCD?.includes(term) ||
+      bn.Email?.toLowerCase().includes(term)
+    )
+  })
+
   if (loading) return <div className="loading">Đang tải...</div>
 
   return (
@@ -140,6 +153,25 @@ export default function BenhNhan() {
           Thêm Bệnh Nhân Mới
         </button>
       </div>
+
+      {!moform && (
+        <div className="search-bar" style={{ marginBottom: '20px' }}>
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên, số điện thoại, CCCD, email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 15px',
+              fontSize: '14px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              outline: 'none'
+            }}
+          />
+        </div>
+      )}
 
       {moform && (
         <div className="card">
@@ -302,8 +334,8 @@ export default function BenhNhan() {
             </tr>
           </thead>
           <tbody>
-            {danhsachbenhnhan.length > 0 ? (
-              danhsachbenhnhan.map((benhnhan) => (
+            {danhsachlocbenhnhan.length > 0 ? (
+              danhsachlocbenhnhan.map((benhnhan) => (
                 <tr key={benhnhan.BenhNhanId}>
                   <td>{benhnhan.MaBenhNhan}</td>
                   <td>{benhnhan.HoTen}</td>

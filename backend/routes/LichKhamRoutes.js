@@ -19,4 +19,7 @@ router.post('/:id/confirm', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), Lich
 router.post('/:id/cancel', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.cancelAppointment);
 router.post('/:id/complete', AuthMiddleware.checkRole(['BacSi']), LichKhamController.completeAppointment);
 
+// Export
+router.get('/export/excel', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.exportToExcel);
+
 module.exports = router;

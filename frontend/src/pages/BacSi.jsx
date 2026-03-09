@@ -10,6 +10,7 @@ export default function BacSi() {
   const { user } = useContext(AuthContext)
   const [danhsachbacsi, setDanhsachbacsi] = useState([])
   const [danhsachchuyenkhoa, setDanhsachchuyenkhoa] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [moform, setMoform] = useState(false)
@@ -169,6 +170,18 @@ export default function BacSi() {
     return chuyenkhoa ? chuyenkhoa.TenChuyenKhoa : '-'
   }
 
+  // Filter danh sách bác sĩ theo từ khóa tìm kiếm
+  const danhsachlocbacsi = danhsachbacsi.filter(bs => {
+    if (!searchTerm) return true
+    const term = searchTerm.toLowerCase()
+    return (
+      bs.NguoiDung?.HoTen?.toLowerCase().includes(term) ||
+      bs.NguoiDung?.DienThoai?.includes(term) ||
+      bs.SoChungChi?.includes(term) ||
+      layTenChuyenKhoa(bs.ChuyenKhoaId)?.toLowerCase().includes(term)
+    )
+  })
+
   if (loading) return <div className="loading">Đang tải...</div>
 
   return (
@@ -184,10 +197,29 @@ export default function BacSi() {
             }}
             disabled={moform}
           >
-            ➕ Thêm bác sĩ
+            Thêm bác sĩ
           </button>
         )}
       </div>
+
+      {!moform && (
+        <div className="search-bar" style={{ marginBottom: '20px' }}>
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên, số điện thoại, số chứng chỉ, chuyên khoa..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 15px',
+              fontSize: '14px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              outline: 'none'
+            }}
+          />
+        </div>
+      )}
 
       {moform && laAdmin && (
         <div className="form-container">
@@ -337,12 +369,14 @@ export default function BacSi() {
             </tr>
           </thead>
           <tbody>
-            {danhsachbacsi.length === 0 ? (
+            {danhsachlocbacsi.length === 0 ? (
               <tr>
-                <td colSpan="8" className="text-center">Chưa có dữ liệu</td>
+                <td colSpan="8" className="text-center">
+                  {searchTerm ? 'Không tìm thấy bác sĩ nào' : 'Chưa có dữ liệu'}
+                </td>
               </tr>
             ) : (
-              danhsachbacsi.map((bacsi) => (
+              danhsachlocbacsi.map((bacsi) => (
                 <tr key={bacsi.BacSiId}>
                   <td>{bacsi.BacSiId}</td>
                   <td>{bacsi.NguoiDung?.HoTen || '-'}</td>

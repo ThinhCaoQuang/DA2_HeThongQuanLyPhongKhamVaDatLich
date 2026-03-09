@@ -23,6 +23,8 @@ import ThongKeKham from './pages/ThongKeKham'
 import LichKhamHomNay from './pages/LichKhamHomNay'
 import DoctorPrescriptions from './pages/DoctorPrescriptions'
 import ThongBao from './pages/ThongBao'
+import ThongKeHuyLich from './pages/ThongKeHuyLich'
+import QuanLyNguoiDung from './pages/QuanLyNguoiDung'
 import './styles/global.css'
 
 function AppContent() {
@@ -179,6 +181,16 @@ function AppContent() {
         }
       />
       <Route
+        path="/cancellation-stats"
+        element={
+          <ProtectedRoute requiredRoles={['LeTan', 'QuanTri']}>
+            <MainLayout>
+              <ThongKeHuyLich />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/lich-kham-hom-nay"
         element={
           <ProtectedRoute requiredRoles={['BacSi']}>
@@ -204,6 +216,16 @@ function AppContent() {
           <ProtectedRoute>
             <MainLayout>
               <ThongBao />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute requiredRoles={['QuanTri']}>
+            <MainLayout>
+              <QuanLyNguoiDung />
             </MainLayout>
           </ProtectedRoute>
         }

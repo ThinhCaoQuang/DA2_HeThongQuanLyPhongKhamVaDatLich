@@ -167,7 +167,7 @@ export default function ThongBao() {
 
                     <div style={{ display: 'flex', gap: '20px', fontSize: '0.85em', color: '#999' }}>
                       <span>
-                        📅 {new Date(thongbao.ThoiGianGui).toLocaleString('vi-VN')}
+                        {new Date(thongbao.ThoiGianGui).toLocaleString('vi-VN')}
                       </span>
                       {thongbao.DaDoc && thongbao.ThoiGianDoc && (
                         <span>
@@ -176,7 +176,7 @@ export default function ThongBao() {
                       )}
                       {thongbao.LichKham && (
                         <span>
-                          🏥 Lịch khám: {thongbao.LichKham.MaLichKham}
+                          Lịch khám: {thongbao.LichKham.MaLichKham}
                         </span>
                       )}
                     </div>

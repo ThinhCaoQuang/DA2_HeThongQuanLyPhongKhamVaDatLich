@@ -16,4 +16,7 @@ router.post('/', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), HoSoKh
 router.put('/:id', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), HoSoKhamBenhController.update);
 router.delete('/:id', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), HoSoKhamBenhController.delete);
 
+// Export
+router.get('/export/excel', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'BacSi']), HoSoKhamBenhController.exportToExcel);
+
 module.exports = router;

@@ -16,6 +16,7 @@ const DashboardRoutes = require('./routes/DashboardRoutes');
 const ThongBaoRoutes = require('./routes/ThongBaoRoutes');
 const SpecialtyRecommendationRoutes = require('./routes/SpecialtyRecommendationRoutes');
 const SchedulerRoutes = require('./routes/SchedulerRoutes');
+const UserManagementRoutes = require('./routes/UserManagementRoutes');
 const NotificationScheduler = require('./services/NotificationScheduler');
 
 const app = express();
@@ -43,6 +44,7 @@ app.use('/api/dashboard', DashboardRoutes);
 app.use('/api/thongbao', ThongBaoRoutes);
 app.use('/api/specialty-recommendation', SpecialtyRecommendationRoutes);
 app.use('/api/scheduler', SchedulerRoutes);
+app.use('/api/users', UserManagementRoutes);
 
 // 404 handler
 app.use((req, res) => {

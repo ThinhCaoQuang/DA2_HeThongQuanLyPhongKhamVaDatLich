@@ -11,12 +11,12 @@ Frontend React cho hệ thống quản lý phòng khám với giao diện đơn 
 - **Responsive**: Tối ưu cho desktop, tablet, mobile
 
 ### Chức Năng
-- ✅ Đăng nhập/Đăng xuất
-- ✅ Bảng điều khiển (Dashboard)
-- ✅ Quản lý bệnh nhân (CRUD)
-- ✅ Quản lý lịch khám
-- ✅ Quản lý bác sĩ
-- ✅ Kiểm soát truy cập theo vai trò (Role-based)
+- Đăng nhập/Đăng xuất
+- Bảng điều khiển (Dashboard)
+- Quản lý bệnh nhân (CRUD)
+- Quản lý lịch khám
+- Quản lý bác sĩ
+- Kiểm soát truy cập theo vai trò (Role-based)
 
 ### Vai Trò & Quyền
 - **Quản Trị Viên (QuanTri)**: Truy cập tất cả chức năng
@@ -105,11 +105,11 @@ npm run preview
 
 ## Tính Năng Bảo Mật
 
-- ✅ JWT Authentication
-- ✅ Token validation trên mỗi request
-- ✅ Auto-logout khi token hết hạn (401)
-- ✅ Role-based access control
-- ✅ Protected routes
+- JWT Authentication
+- Token validation trên mỗi request
+- Auto-logout khi token hết hạn (401)
+- Role-based access control
+- Protected routes
 
 ## Quy Ước Màu
 

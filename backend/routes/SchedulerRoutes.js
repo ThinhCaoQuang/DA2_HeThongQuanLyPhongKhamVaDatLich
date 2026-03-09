@@ -4,12 +4,11 @@ const AuthMiddleware = require('../middleware/AuthMiddleware');
 
 const router = express.Router();
 
-// Chỉ admin mới có thể chạy thủ công
-router.use(AuthMiddleware.verifyToken);
-router.use(AuthMiddleware.isAdmin);
-
-// Chạy thủ công nhắc lịch (để test)
-router.post('/run-manual', async (req, res) => {
+// Chạy thủ công nhắc lịch (để test) - Chỉ admin
+router.post('/run-manual', 
+  AuthMiddleware.verifyToken,
+  AuthMiddleware.checkRole(['QuanTri']),
+  async (req, res) => {
   try {
     await NotificationScheduler.runManualReminders();
     res.status(200).json({

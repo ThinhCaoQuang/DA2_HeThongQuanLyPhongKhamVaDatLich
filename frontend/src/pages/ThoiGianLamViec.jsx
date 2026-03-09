@@ -331,7 +331,7 @@ export default function ThoiGianLamViec() {
           }}
           disabled={moform}
         >
-          ➕ Thêm lịch làm việc
+          Thêm lịch làm việc
         </button>
       </div>
 
@@ -471,7 +471,7 @@ export default function ThoiGianLamViec() {
         <div style={{ flex: 1, minWidth: '200px' }}>
           <input
             type="text"
-            placeholder="🔍 Tìm kiếm theo tên bác sĩ..."
+            placeholder="Tìm kiếm theo tên bác sĩ..."
             value={timkiemtenbacsi}
             onChange={(e) => setTimKiemTenBacSi(e.target.value)}
             style={{ 
@@ -543,7 +543,7 @@ export default function ThoiGianLamViec() {
               fontSize: '14px'
             }}
           >
-            ✕ Xóa bộ lọc
+            Xóa bộ lọc
           </button>
         )}
       </div>

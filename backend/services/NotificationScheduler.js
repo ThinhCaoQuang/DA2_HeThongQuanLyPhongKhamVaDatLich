@@ -11,13 +11,13 @@ class NotificationScheduler {
   static startDailyReminders() {
     // Chạy mỗi ngày lúc 8:00 sáng
     cron.schedule('0 8 * * *', async () => {
-      console.log('🔔 Đang gửi nhắc lịch khám hàng ngày...');
+      console.log('Đang gửi nhắc lịch khám hàng ngày...');
       try {
         await this.sendTodayReminders();
         await this.sendTomorrowReminders();
         console.log('✓ Hoàn thành gửi nhắc lịch');
       } catch (error) {
-        console.error('❌ Lỗi gửi nhắc lịch:', error);
+        console.error('Lỗi gửi nhắc lịch:', error);
       }
     }, {
       timezone: "Asia/Ho_Chi_Minh"
@@ -54,7 +54,7 @@ class NotificationScheduler {
       ]
     });
 
-    console.log(`📅 Tìm thấy ${appointments.length} lịch khám hôm nay`);
+    console.log(`Tìm thấy ${appointments.length} lịch khám hôm nay`);
 
     for (const apt of appointments) {
       try {
@@ -89,7 +89,7 @@ class NotificationScheduler {
 
         console.log(`✓ Đã nhắc lịch ${apt.MaLichKham}`);
       } catch (error) {
-        console.error(`❌ Lỗi nhắc lịch ${apt.MaLichKham}:`, error);
+        console.error(`Lỗi nhắc lịch ${apt.MaLichKham}:`, error);
       }
     }
   }
@@ -123,7 +123,7 @@ class NotificationScheduler {
       ]
     });
 
-    console.log(`📅 Tìm thấy ${appointments.length} lịch khám ngày mai`);
+    console.log(`Tìm thấy ${appointments.length} lịch khám ngày mai`);
 
     for (const apt of appointments) {
       try {
@@ -146,7 +146,7 @@ class NotificationScheduler {
 
         console.log(`✓ Đã nhắc lịch ngày mai ${apt.MaLichKham}`);
       } catch (error) {
-        console.error(`❌ Lỗi nhắc lịch ngày mai ${apt.MaLichKham}:`, error);
+        console.error(`Lỗi nhắc lịch ngày mai ${apt.MaLichKham}:`, error);
       }
     }
   }
@@ -155,7 +155,7 @@ class NotificationScheduler {
    * Chạy thủ công để test (gọi từ API hoặc script)
    */
   static async runManualReminders() {
-    console.log('🔔 Chạy thủ công nhắc lịch...');
+    console.log('Chạy thủ công nhắc lịch...');
     await this.sendTodayReminders();
     await this.sendTomorrowReminders();
     console.log('✓ Hoàn thành nhắc lịch thủ công');

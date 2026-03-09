@@ -14,6 +14,7 @@ export default function LichKham() {
   const [danhsachchuyenkhoa, setDanhSachChuyenKhoa] = useState([])
   const [danhsachbacsi, setDanhSachBacSi] = useState([])
   const [danhsagiovachon, setDanhSachGioVaChon] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [moform, setMoForm] = useState(false)
@@ -202,7 +203,7 @@ export default function LichKham() {
         TrieuChung: dulieuform.trieuChung,
         GhiChu: dulieuform.ghiChu,
       }
-      console.log('📤 Sending appointment:', payload)
+      console.log('Sending appointment:', payload)
       
       if (idchinh) {
         await apiClient.put(`/lichkham/${idchinh}`, payload)
@@ -335,23 +336,78 @@ export default function LichKham() {
     return <span className={`badge badge-${thongtin.color}`}>{thongtin.label}</span>
   }
 
+  // Filter danh sách lịch khám theo từ khóa tìm kiếm
+  const danhsachloc = danhsachlichkham.filter(lk => {
+    if (!searchTerm) return true
+    const term = searchTerm.toLowerCase()
+    return (
+      lk.BenhNhan?.HoTen?.toLowerCase().includes(term) ||
+      lk.BenhNhan?.MaBenhNhan?.toLowerCase().includes(term) ||
+      lk.BacSi?.NguoiDung?.HoTen?.toLowerCase().includes(term) ||
+      lk.ChuyenKhoa?.TenChuyenKhoa?.toLowerCase().includes(term)
+    )
+  })
+
   if (loading) return <div className="loading">Đang tải...</div>
 
   return (
     <div className="list-page">
       <div className="page-header">
         <h1>Quản Lý Lịch Khám</h1>
-        <button
-          className="btn-primary"
-          onClick={() => {
-            setMoForm(true)
-            setLoiSuForm({})
-          }}
-          disabled={moform}
-        >
-          Tạo Lịch Khám Mới
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            className="btn-success"
+            onClick={async () => {
+              try {
+                const response = await apiClient.get('/lichkham/export/excel', {
+                  responseType: 'blob'
+                });
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `LichKham_${new Date().toISOString().split('T')[0]}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                success('Xuất Excel thành công');
+              } catch (err) {
+                showError('Không thể xuất file Excel');
+              }
+            }}
+          >
+            Xuất Excel
+          </button>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              setMoForm(true)
+              setLoiSuForm({})
+            }}
+            disabled={moform}
+          >
+            Tạo Lịch Khám Mới
+          </button>
+        </div>
       </div>
+
+      {!moform && (
+        <div className="search-bar" style={{ marginBottom: '20px' }}>
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên bệnh nhân, mã bệnh nhân, tên bác sĩ, chuyên khoa..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 15px',
+              fontSize: '14px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              outline: 'none'
+            }}
+          />
+        </div>
+      )}
 
       {moform && (
         <div className="card">
@@ -535,8 +591,8 @@ export default function LichKham() {
             </tr>
           </thead>
           <tbody>
-            {danhsachlichkham.length > 0 ? (
-              danhsachlichkham.map((lichkham) => (
+            {danhsachloc.length > 0 ? (
+              danhsachloc.map((lichkham) => (
                 <tr key={lichkham.LichKhamId}>
                   <td>{lichkham.MaLichKham}</td>
                   <td>{layTenBenhNhan(lichkham.BenhNhanId)}</td>
@@ -596,7 +652,7 @@ export default function LichKham() {
             ) : (
               <tr>
                 <td colSpan="8" className="text-center">
-                  Không có lịch khám nào
+                  {searchTerm ? 'Không tìm thấy lịch khám nào' : 'Không có lịch khám nào'}
                 </td>
               </tr>
             )}

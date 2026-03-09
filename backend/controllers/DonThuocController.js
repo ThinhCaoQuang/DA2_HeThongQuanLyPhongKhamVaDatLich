@@ -1,4 +1,5 @@
-const { DonThuoc, DonThuocChiTiet, HoSoKhamBenh, BenhNhan, BacSi, NguoiDung } = require('../models');
+  const { DonThuoc, DonThuocChiTiet, HoSoKhamBenh, BenhNhan, BacSi, NguoiDung } = require('../models');
+const ExportService = require('../services/ExportService');
 
 // Generate prescription code
 const generateMaDonThuoc = async () => {
@@ -261,6 +262,61 @@ const DonThuocController = {
       res.status(500).json({
         success: false,
         message: 'Lỗi máy chủ',
+        error: error.message
+      });
+    }
+  },
+
+  // Xuất đơn thuốc ra PDF
+  exportToPDF: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const prescription = await DonThuoc.findByPk(id, {
+        include: [
+          {
+            model: HoSoKhamBenh,
+            attributes: ['HoSoId', 'MaHoSo', 'NgayKham'],
+            include: [
+              { model: BenhNhan, attributes: ['BenhNhanId', 'HoTen', 'NgaySinh', 'GioiTinh', 'DienThoai'] },
+              { model: BacSi, attributes: ['BacSiId'], include: [{ model: NguoiDung, attributes: ['HoTen'] }] }
+            ]
+          },
+          { model: DonThuocChiTiet }
+        ]
+      });
+
+      if (!prescription) {
+        return res.status(404).json({
+          success: false,
+          message: 'Đơn thuốc không tìm thấy'
+        });
+      }
+
+      // Chuẩn bị dữ liệu cho PDF
+      const pdfData = {
+        MaDonThuoc: prescription.MaDonThuoc,
+        MaHoSo: prescription.HoSoKhamBenh?.MaHoSo,
+        NgayKham: prescription.HoSoKhamBenh?.NgayKham,
+        CreatedAt: prescription.CreatedAt,
+        GhiChu: prescription.GhiChu,
+        BenhNhan: prescription.HoSoKhamBenh?.BenhNhan,
+        BacSi: prescription.HoSoKhamBenh?.BacSi,
+        ChiTiet: prescription.DonThuocChiTiets || []
+      };
+
+      const buffer = await ExportService.exportPrescriptionToPDF(pdfData);
+
+      const filename = `DonThuoc_${prescription.MaDonThuoc}.pdf`;
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(buffer);
+    } catch (error) {
+      console.error('Export prescription to PDF error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi xuất file PDF',
         error: error.message
       });
     }

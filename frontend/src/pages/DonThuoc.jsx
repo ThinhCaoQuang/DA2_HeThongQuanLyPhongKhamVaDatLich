@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext } from 'react'
-import html2pdf from 'html2pdf.js'
 import apiClient from '../services/api'
 import { ToastContext } from '../context/ToastContext'
 import { AuthContext } from '../context/AuthContext'
@@ -23,6 +22,7 @@ export default function DonThuoc() {
   })
   const [loisuform, setLoiSuForm] = useState({})
   const [locTaiHoSoId, setLocTaiHoSoId] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const coTheTao = user?.role === 'BacSi' || user?.role === 'QuanTri'
   const coTheXem = user?.role === 'BacSi' || user?.role === 'QuanTri' || user?.role === 'LeTan'
@@ -144,114 +144,30 @@ export default function DonThuoc() {
     }
   }
 
-  const xulyInDonThuoc = () => {
+  const xulyInDonThuoc = async () => {
     if (!dondangxem) return
 
-    const donthuoc = dondangxem
-    const boso = donthuoc.HoSoKhamBenh
-    const thuocs = donthuoc.DonThuocChiTiets || []
-    
-    const tinhTuoi = (ngaySinh) => {
-      if (!ngaySinh) return null
-      const today = new Date()
-      const birth = new Date(ngaySinh)
-      let age = today.getFullYear() - birth.getFullYear()
-      const monthDiff = today.getMonth() - birth.getMonth()
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-        age--
-      }
-      return age
+    try {
+      const response = await apiClient.get(`/donthuoc/${dondangxem.DonThuocId}/export/pdf`, {
+        responseType: 'blob'
+      })
+
+      // Tạo blob URL và download
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `DonThuoc_${dondangxem.MaDonThuoc}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      hienThongBao('Xuất PDF thành công!', 'success')
+    } catch (error) {
+      console.error('Lỗi xuất PDF:', error)
+      hienThongBao('Có lỗi khi xuất PDF', 'error')
     }
-    
-    const tuoiBenhNhan = tinhTuoi(boso?.BenhNhan?.NgaySinh)
-    
-    console.log('Dữ liệu đơn thuốc:', dondangxem)
-    console.log('Hồ sơ:', boso)
-    console.log('Thông tin bệnh nhân:', boso?.BenhNhan)
-    console.log('Tuổi bệnh nhân:', tuoiBenhNhan)
-    console.log('Thông tin bác sĩ:', boso?.BacSi?.NguoiDung)
-    
-    const phanTu = document.createElement('div')
-    phanTu.innerHTML = `
-      <div style="font-family: 'Times New Roman', serif; padding: 30px; max-width: 800px; margin: 0 auto;">
-        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
-          <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 5px 0;">ĐƠN THUỐC</h1>
-          <p style="font-size: 14px; color: #666; margin: 0;">Mã: ${donthuoc.MaDonThuoc}</p>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; font-size: 14px;">
-          <div>
-            <div style="display: flex; margin-bottom: 8px;">
-              <div style="font-weight: bold; width: 120px;">Bệnh nhân:</div>
-              <div style="flex: 1;">${boso?.BenhNhan?.HoTen || 'N/A'}</div>
-            </div>
-            <div style="display: flex; margin-bottom: 8px;">
-              <div style="font-weight: bold; width: 120px;">Tuổi:</div>
-              <div style="flex: 1;">${tuoiBenhNhan ? tuoiBenhNhan + ' tuổi' : 'N/A'}</div>
-            </div>
-            <div style="display: flex; margin-bottom: 8px;">
-              <div style="font-weight: bold; width: 120px;">Giới tính:</div>
-              <div style="flex: 1;">${boso?.BenhNhan?.GioiTinh || 'N/A'}</div>
-            </div>
-          </div>
-          <div>
-            <div style="display: flex; margin-bottom: 8px;">
-              <div style="font-weight: bold; width: 120px;">Hồ sơ:</div>
-              <div style="flex: 1;">${boso?.MaHoSo || 'N/A'}</div>
-            </div>
-            <div style="display: flex; margin-bottom: 8px;">
-              <div style="font-weight: bold; width: 120px;">Ngày khám:</div>
-              <div style="flex: 1;">${boso?.NgayKham ? new Date(boso.NgayKham).toLocaleDateString('vi-VN') : 'N/A'}</div>
-            </div>
-            <div style="display: flex; margin-bottom: 8px;">
-              <div style="font-weight: bold; width: 120px;">Bác sĩ:</div>
-              <div style="flex: 1;">${boso?.BacSi?.NguoiDung?.HoTen || 'N/A'}</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin: 20px 0;">
-          <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">DANH SÁCH THUỐC</h2>
-          ${thuocs.length > 0 ? thuocs.map((med, idx) => `
-            <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px dotted #ddd; font-size: 13px;">
-              <div style="font-weight: bold; margin-bottom: 3px;">${idx + 1}. ${med.TenThuoc}${med.LieuLuong ? ' - ' + med.LieuLuong : ''}</div>
-              <div style="color: #666; font-size: 12px;">
-                ${med.SoLuong ? `<div>Số lượng: <strong>${med.SoLuong} ${med.DonVi || 'viên'}</strong></div>` : ''}
-                ${med.HuongDanSuDung ? `<div>Cách dùng: ${med.HuongDanSuDung}</div>` : ''}
-                ${med.ThoiGianDung ? `<div>Thời gian dùng: ${med.ThoiGianDung}</div>` : ''}
-              </div>
-            </div>
-          `).join('') : '<p>Không có danh sách thuốc</p>'}
-        </div>
-
-        ${donthuoc.GhiChu ? `
-          <div style="margin: 20px 0;">
-            <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">GHI CHÚ</h2>
-            <p style="font-size: 13px; line-height: 1.5;">${donthuoc.GhiChu}</p>
-          </div>
-        ` : ''}
-
-        <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; text-align: center;">
-          <div>
-            <div style="font-size: 12px; margin-bottom: 10px;">Ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}</div>
-          </div>
-          <div>
-            <div style="font-size: 12px;">Ký tên bác sĩ</div>
-            <div style="border-top: 1px solid #333; margin-top: 50px; font-size: 12px;"></div>
-          </div>
-        </div>
-      </div>
-    `
-
-    const opt = {
-      margin: 10,
-      filename: `DonThuoc_${donthuoc.MaDonThuoc}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-    }
-
-    html2pdf().set(opt).from(phanTu).save()
   }
 
   const xulyHuy = () => {
@@ -309,9 +225,22 @@ export default function DonThuoc() {
     }))
   }
 
-  const donthuocDaLoc = danhsachdonthuoc.filter(p =>
-    !locTaiHoSoId || p.HoSoId === parseInt(locTaiHoSoId)
-  )
+  const donthuocDaLoc = danhsachdonthuoc.filter(p => {
+    // Lọc theo hồ sơ
+    if (locTaiHoSoId && p.HoSoId !== parseInt(locTaiHoSoId)) return false
+    
+    // Lọc theo từ khóa tìm kiếm
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      const benhNhanName = p.HoSoKhamBenh?.LichKham?.BenhNhan?.HoTen?.toLowerCase() || ''
+      const maBenhNhan = p.HoSoKhamBenh?.LichKham?.BenhNhan?.MaBenhNhan?.toLowerCase() || ''
+      const tenThuoc = p.ChiTiet?.map(ct => ct.TenThuoc).join(' ').toLowerCase() || ''
+      
+      return benhNhanName.includes(term) || maBenhNhan.includes(term) || tenThuoc.includes(term)
+    }
+    
+    return true
+  })
 
   if (dangta) return <div className="container">Đang tải...</div>
 
@@ -345,6 +274,26 @@ export default function DonThuoc() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--text-dark)' }}>
+            Tìm kiếm:
+          </label>
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên bệnh nhân, mã bệnh nhân, tên thuốc..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.7rem',
+              border: '1px solid #ddd',
+              borderRadius: '6px',
+              fontSize: '0.95rem',
+              outline: 'none'
+            }}
+          />
         </div>
 
         {coTheTao && (
@@ -383,7 +332,6 @@ export default function DonThuoc() {
                 }
               }}
             >
-              <span style={{ fontSize: '1.3rem' }}>{moform ? '✕' : '+'}</span>
               <span>{moform ? 'Hủy' : 'Thêm đơn thuốc'}</span>
             </button>
           </div>
@@ -589,7 +537,7 @@ export default function DonThuoc() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Chi tiết Đơn Thuốc</h2>
-              <button className="modal-close" onClick={() => setMoChiTiet(false)}>✕</button>
+              <button className="modal-close" onClick={() => setMoChiTiet(false)}>X</button>
             </div>
             <div className="modal-body">
               <div className="detail-row">

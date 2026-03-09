@@ -99,7 +99,7 @@ export default function ThongKeNhanh() {
           </div>
           <div style={{ padding: '20px' }}>
             <ul>
-              <li>📱 Sử dụng <strong>Lịch Khám Hôm Nay</strong> để xem danh sách bệnh nhân khám hôm nay</li>
+              <li>Sử dụng <strong>Lịch Khám Hôm Nay</strong> để xem danh sách bệnh nhân khám hôm nay</li>
               <li>Dùng <strong>Điều Phối Lịch</strong> để tìm giờ trống và sắp xếp lịch khám cho bệnh nhân</li>
               <li>Theo dõi thống kê để quản lý hiệu quả công việc</li>
             </ul>

@@ -1,4 +1,6 @@
 const { HoSoKhamBenh, LichKham, BenhNhan, BacSi, NguoiDung } = require('../models');
+const ExportService = require('../services/ExportService');
+const { Op } = require('sequelize');
 
 // Generate medical record code
 const generateMaHoSo = async () => {
@@ -226,6 +228,58 @@ const HoSoKhamBenhController = {
       res.status(500).json({
         success: false,
         message: 'Lỗi máy chủ',
+        error: error.message
+      });
+    }
+  },
+
+  // Xuất danh sách hồ sơ khám bệnh ra Excel
+  exportToExcel: async (req, res) => {
+    try {
+      const { benhNhanId, bacSiId, startDate, endDate } = req.query;
+
+      const where = {};
+      if (benhNhanId) where.BenhNhanId = benhNhanId;
+      if (bacSiId) where.BacSiId = bacSiId;
+
+      if (startDate || endDate) {
+        where.CreatedAt = {};
+        if (startDate) where.CreatedAt[Op.gte] = new Date(startDate);
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          where.CreatedAt[Op.lte] = end;
+        }
+      }
+
+      const records = await HoSoKhamBenh.findAll({
+        where,
+        include: [
+          { model: LichKham, attributes: ['LichKhamId', 'MaLichKham', 'ThoiGianBatDau'] },
+          { model: BenhNhan, attributes: ['BenhNhanId', 'MaBenhNhan', 'HoTen'] },
+          { 
+            model: BacSi, 
+            attributes: ['BacSiId', 'NguoiDungId'],
+            include: [
+              { model: NguoiDung, attributes: ['HoTen'] }
+            ]
+          }
+        ],
+        order: [['NgayKham', 'ASC']]
+      });
+
+      const buffer = await ExportService.exportMedicalRecordsToExcel(records, { startDate, endDate });
+
+      const filename = `HoSoKhamBenh_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(buffer);
+    } catch (error) {
+      console.error('Export medical records to Excel error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi xuất file Excel',
         error: error.message
       });
     }

@@ -9,6 +9,7 @@ export default function DoctorPrescriptions() {
   const { success, error: showError } = useContext(ToastContext)
   const [danhsachdonthuoc, setDanhSachDonThuoc] = useState([])
   const [danhsachhoSo, setDanhSachHoSo] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [dangta, setDangTa] = useState(true)
   const [dangguiForm, setDangGuiForm] = useState(false)
   const [moForm, setMoForm] = useState(false)
@@ -132,6 +133,16 @@ export default function DoctorPrescriptions() {
     }
   }
 
+  // Filter danh sách đơn thuốc theo từ khóa tìm kiếm
+  const danhsachloc = danhsachdonthuoc.filter(dt => {
+    if (!searchTerm) return true
+    const term = searchTerm.toLowerCase()
+    const benhNhanName = dt.HoSoKhamBenh?.LichKham?.BenhNhan?.HoTen?.toLowerCase() || ''
+    const maDon = dt.MaDonThuoc?.toLowerCase() || ''
+    const tenThuoc = dt.ChiTiet?.map(ct => ct.TenThuoc).join(' ').toLowerCase() || ''
+    return benhNhanName.includes(term) || maDon.includes(term) || tenThuoc.includes(term)
+  })
+
   if (dangta) return <div className="loading">Đang tải...</div>
 
   return (
@@ -141,9 +152,28 @@ export default function DoctorPrescriptions() {
         <p>Bác sĩ: {user?.HoTen}</p>
       </div>
 
+      {!moForm && (
+        <div className="search-bar" style={{ marginBottom: '20px' }}>
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên bệnh nhân, mã đơn, tên thuốc..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 15px',
+              fontSize: '14px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              outline: 'none'
+            }}
+          />
+        </div>
+      )}
+
       <div style={{ marginBottom: '20px' }}>
         <button className="btn btn-primary" onClick={() => setMoForm(!moForm)}>
-          {moForm ? 'Hủy' : '➕ Tạo Đơn Thuốc Mới'}
+          {moForm ? 'Hủy' : 'Tạo Đơn Thuốc Mới'}
         </button>
       </div>
 
@@ -279,9 +309,9 @@ export default function DoctorPrescriptions() {
           <h2>Danh Sách Đơn Thuốc ({danhsachdonthuoc.length})</h2>
         </div>
 
-        {danhsachdonthuoc.length === 0 ? (
+        {danhsachloc.length === 0 ? (
           <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-            Chưa có đơn thuốc nào
+            {searchTerm ? 'Không tìm thấy đơn thuốc nào' : 'Chưa có đơn thuốc nào'}
           </div>
         ) : (
           <div className="table-responsive">
@@ -296,7 +326,7 @@ export default function DoctorPrescriptions() {
                 </tr>
               </thead>
               <tbody>
-                {danhsachdonthuoc.map(don => (
+                {danhsachloc.map(don => (
                   <tr key={don.DonThuocId}>
                     <td>{don.HoSo?.BenhNhan?.HoTen || '-'}</td>
                     <td>{new Date(don.NgayTao).toLocaleDateString('vi-VN')}</td>

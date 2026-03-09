@@ -59,7 +59,7 @@ export default function Header() {
             }}
             title="Thông báo"
           >
-            🔔
+            [Bell]
             {unreadCount > 0 && (
               <span
                 style={{

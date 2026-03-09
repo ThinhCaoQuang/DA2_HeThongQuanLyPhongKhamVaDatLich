@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đơn thuốc {{MaDonThuoc}}</title>
+  <style>
+    @font-face {
+      font-family: 'Times New Roman';
+      src: local('Times New Roman'), local('TimesNewRoman'), serif;
+    }
+    @font-face {
+      font-family: 'Segoe UI';
+      src: local('Segoe UI'), local('Segoe'), sans-serif;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Times New Roman', 'Segoe UI', 'Tahoma', 'Calibri', serif;
+      line-height: 1.6;
+      color: #000;
+      background: white;
+      padding: 40px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #333;
+      padding-bottom: 15px;
+    }
+    .header h1 { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+    .header p { font-size: 14px; color: #666; }
+    .info-section { display: table; width: 100%; margin-bottom: 30px; }
+    .info-column { display: table-cell; width: 50%; vertical-align: top; padding-right: 20px; }
+    .info-title { font-weight: bold; font-size: 14px; margin-bottom: 10px; }
+    .info-row { font-size: 13px; margin-bottom: 6px; }
+    .info-label { font-weight: 600; }
+    .medicine-section { margin-top: 30px; border-top: 2px solid #333; padding-top: 20px; }
+    .medicine-section h2 { font-size: 16px; font-weight: bold; margin-bottom: 15px; }
+    .medicine-item { margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px dashed #ccc; }
+    .medicine-name { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+    .medicine-details { font-size: 12px; color: #444; margin-left: 20px; }
+    .medicine-details div { margin-bottom: 3px; }
+    .notes-section { margin-top: 25px; }
+    .notes-section h2 { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+    .notes-content { font-size: 13px; line-height: 1.5; }
+    .signature-section { margin-top: 50px; display: table; width: 100%; }
+    .signature-column { display: table-cell; width: 50%; text-align: center; vertical-align: top; }
+    .signature-date { font-size: 13px; font-style: italic; margin-bottom: 10px; }
+    .signature-title { font-size: 13px; font-weight: bold; margin-bottom: 5px; }
+    .signature-note { font-size: 11px; font-style: italic; color: #666; margin-bottom: 50px; }
+    .signature-name { font-size: 14px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ĐƠN THUỐC</h1>
+    <p>Mã: {{MaDonThuoc}}</p>
+  </div>
+  <div class="info-section">
+    <div class="info-column">
+      <div class="info-title">Thông tin bệnh nhân:</div>
+      <div class="info-row"><span class="info-label">Họ tên:</span> {{BenhNhanHoTen}}</div>
+      <div class="info-row"><span class="info-label">Ngày sinh:</span> {{BenhNhanNgaySinh}}</div>
+      <div class="info-row"><span class="info-label">Tuổi:</span> {{BenhNhanTuoi}}</div>
+      <div class="info-row"><span class="info-label">Giới tính:</span> {{BenhNhanGioiTinh}}</div>
+      <div class="info-row"><span class="info-label">Số điện thoại:</span> {{BenhNhanDienThoai}}</div>
+    </div>
+    <div class="info-column">
+      <div class="info-title">Thông tin khám:</div>
+      <div class="info-row"><span class="info-label">Hồ sơ:</span> {{MaHoSo}}</div>
+      <div class="info-row"><span class="info-label">Ngày khám:</span> {{NgayKham}}</div>
+      <div class="info-row"><span class="info-label">Bác sĩ:</span> {{BacSiHoTen}}</div>
+    </div>
+  </div>
+  <div class="medicine-section">
+    <h2>DANH SÁCH THUỐC</h2>
+    {{MedicineList}}
+  </div>
+  {{NotesSection}}
+  <div class="signature-section">
+    <div class="signature-column">
+      <div class="signature-date">{{SignatureDate}}</div>
+    </div>
+    <div class="signature-column">
+      <div class="signature-title">Bác sĩ khám bệnh</div>
+      <div class="signature-note">(Ký và ghi rõ họ tên)</div>
+      <div class="signature-name">{{BacSiHoTen}}</div>
+    </div>
+  </div>
+</body>
+</html>
