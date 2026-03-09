@@ -90,7 +90,7 @@ Phân tích và trả lời dưới dạng JSON (CHỈ JSON, không có text kh�
     {"specialty": "Tên chuyên khoa tiếng Việt", "confidence": 0.95, "reason": "Giải thích ngắn gọn"},
     ...
   ]
-};
+};`
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     console.log('Calling endpoint:', endpoint.substring(0, 80) + '...');
