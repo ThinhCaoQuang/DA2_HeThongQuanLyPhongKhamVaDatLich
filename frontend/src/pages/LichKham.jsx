@@ -38,16 +38,24 @@ export default function LichKham() {
     laydulieu()
   }, [])
 
-  // Load doctors when specialty changes
+  // Load doctors when specialty changes (for admin and doctors)
   useEffect(() => {
-    if (dulieuform.chuyenkhoanid) {
-      taibacsitheokhoa(dulieuform.chuyenkhoanid)
+    if (user?.role === 'LeTan') {
+      // For LeTan: Load all doctors on form open
+      if (moform) {
+        taiTatCaBacSi()
+      }
     } else {
-      setDanhSachBacSi([])
-      setDanhSachGioVaChon([])
-      setDuLieuForm(prev => ({ ...prev, bacsiiid: '', thoigianhatdau: '' }))
+      // For admin and doctors: Load doctors based on specialty selection
+      if (dulieuform.chuyenkhoanid) {
+        taibacsitheokhoa(dulieuform.chuyenkhoanid)
+      } else {
+        setDanhSachBacSi([])
+        setDanhSachGioVaChon([])
+        setDuLieuForm(prev => ({ ...prev, bacsiiid: '', thoigianhatdau: '' }))
+      }
     }
-  }, [dulieuform.chuyenkhoanid])
+  }, [dulieuform.chuyenkhoanid, moform, user?.role])
 
   // Load available time slots when doctor changes
   useEffect(() => {
@@ -111,6 +119,28 @@ export default function LichKham() {
     }
   }
 
+  // Load all doctors for LeTan (receptionist)
+  const taiTatCaBacSi = async () => {
+    try {
+      setDangTaiBacSi(true)
+      console.log('Fetching all doctors for LeTan')
+      const response = await apiClient.get('/bacsi?limit=1000')
+      console.log('All doctors response:', response.data)
+      const bacsidanhsach = response.data.data || []
+      console.log('All doctors list:', bacsidanhsach)
+      setDanhSachBacSi(bacsidanhsach)
+      if (bacsidanhsach.length === 0) {
+        showError('Không tìm thấy bác sĩ nào')
+      }
+    } catch (err) {
+      console.error('Error loading all doctors:', err)
+      setDanhSachBacSi([])
+      showError('Lỗi tải danh sách bác sĩ')
+    } finally {
+      setDangTaiBacSi(false)
+    }
+  }
+
   const taihoang = async (bacsiiid) => {
     try {
       setDangTaiThoiGian(true)
@@ -164,6 +194,17 @@ export default function LichKham() {
         ...prev,
         [name]: '',
       }))
+    }
+
+    // For LeTan: Auto-fill specialty when doctor is selected
+    if (user?.role === 'LeTan' && name === 'bacsiiid' && value) {
+      const selectedDoctor = danhsachbacsi.find(d => d.BacSiId === parseInt(value))
+      if (selectedDoctor && selectedDoctor.ChuyenKhoaId) {
+        setDuLieuForm((prev) => ({
+          ...prev,
+          chuyenkhoanid: selectedDoctor.ChuyenKhoaId.toString(),
+        }))
+      }
     }
   }
 
@@ -384,6 +425,10 @@ export default function LichKham() {
             onClick={() => {
               setMoForm(true)
               setLoiSuForm({})
+              // Load all doctors for LeTan when opening form
+              if (user?.role === 'LeTan') {
+                taiTatCaBacSi()
+              }
             }}
             disabled={moform}
           >
@@ -477,13 +522,13 @@ export default function LichKham() {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="bacsiiid">Bác Sĩ</label>
+                <label htmlFor="bacsiiid">Bác Sĩ{user?.role !== 'LeTan' && ' *'}</label>
                 <select
                   id="bacsiiid"
                   name="bacsiiid"
                   value={dulieuform.bacsiiid}
                   onChange={xulyThayDoiInput}
-                  disabled={!dulieuform.chuyenkhoanid || dangagibacsi}
+                  disabled={user?.role !== 'LeTan' && !dulieuform.chuyenkhoanid || dangagibacsi}
                   className={loisuform.bacsiiid ? 'input-error' : ''}
                 >
                   <option value="">
@@ -491,7 +536,7 @@ export default function LichKham() {
                   </option>
                   {danhsachbacsi.map((bacsi) => (
                     <option key={bacsi.BacSiId} value={bacsi.BacSiId}>
-                      {bacsi.NguoiDung?.HoTen || 'N/A'}
+                      {bacsi.NguoiDung?.HoTen || 'N/A'} {bacsi.ChuyenKhoa && `(${bacsi.ChuyenKhoa.TenChuyenKhoa})`}
                     </option>
                   ))}
                 </select>

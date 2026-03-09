@@ -76,9 +76,9 @@ export default function Login() {
 
         <div className="login-footer">
           <p>Tài khoản demo:</p>
-          <p>Nhân viên tiếp tân: test456 / Test@123</p>
-          <p>Bác sĩ: doctor1 / Doctor@123</p>
-          <p>Quản trị viên: admin / Admin@123</p>
+          <p>Nhân viên tiếp tân: letan / 123</p>
+          <p>Bác sĩ: bacsitest / 123</p>
+          <p>Quản trị viên: admin1 / 123</p>
         </div>
       </div>
     </div>
