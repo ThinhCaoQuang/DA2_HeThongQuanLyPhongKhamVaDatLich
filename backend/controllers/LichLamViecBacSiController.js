@@ -9,15 +9,21 @@ const LichLamViecBacSiController = {
       const { page = 1, limit = 10, bacSiId, ngayLamViec } = req.query;
       const offset = (page - 1) * limit;
 
+      console.log('getAll called - req.user:', req.user);
+      console.log('User role:', req.user?.role);
+      console.log('Query params - bacSiId:', bacSiId, 'ngayLamViec:', ngayLamViec);
+
       const where = {};
       
       // If user is a BacSi, only show their own schedule
       if (req.user.role === 'BacSi') {
+        console.log('User is BacSi, fetching own schedule only');
         const account = await TaiKhoan.findOne({
           where: { TaiKhoanId: req.user.id }
         });
         
         if (!account) {
+          console.log('Account not found for TaiKhoanId:', req.user.id);
           return res.status(404).json({
             success: false,
             message: 'Không tìm thấy tài khoản'
@@ -29,15 +35,18 @@ const LichLamViecBacSiController = {
         });
         
         if (!myBacSi) {
+          console.log('Doctor profile not found for NguoiDungId:', account.NguoiDungId);
           return res.status(404).json({
             success: false,
             message: 'Không tìm thấy hồ sơ bác sĩ của tài khoản này'
           });
         }
         
+        console.log('Setting BacSiId filter to:', myBacSi.BacSiId);
         where.BacSiId = myBacSi.BacSiId;
       } else if (bacSiId) {
         // For Admin/LeTan, allow filtering by bacSiId if provided
+        console.log('User is not BacSi, using bacSiId from query:', bacSiId);
         where.BacSiId = bacSiId;
       }
 

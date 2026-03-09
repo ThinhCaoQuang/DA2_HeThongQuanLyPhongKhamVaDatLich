@@ -76,11 +76,14 @@ export default function ThoiGianLamViec() {
     try {
       setDangTa(true)
       console.log('Fetching schedules...')
+      // Add timestamp to bypass cache
+      const timestamp = Date.now()
       const [lichlamviecRes, bacsRes] = await Promise.all([
-        apiClient.get('/lichlamviec?limit=1000'),
-        apiClient.get('/bacsi?limit=1000'),
+        apiClient.get(`/lichlamviec?limit=1000&t=${timestamp}`),
+        apiClient.get(`/bacsi?limit=1000&t=${timestamp}`),
       ])
-      console.log('Fetched schedules:', lichlamviecRes.data.data)
+      console.log('Fetched schedules from API:', lichlamviecRes.data.data)
+      console.log('Current user VaiTro:', nguoidunghientai?.VaiTro)
       console.log('Setting schedules to state...')
       setDanhSachLichLamViec(lichlamviecRes.data.data || [])
       setDanhSachBacSi(bacsRes.data.data || [])
