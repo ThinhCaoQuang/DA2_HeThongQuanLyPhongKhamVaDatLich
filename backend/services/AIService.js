@@ -278,7 +278,7 @@ function fallbackKeywordMatching(symptoms) {
         // Spine
         'dau lung', 'dau co', 'dau vai', 'cot song', 'gai cot song', 'thoat vi dia', 'van di dia',
         // Fractures
-        'gay xuong', 'gay xuong chi', 'gay xuong ban', 'xuong gat',
+        'gay xuong', 'gay xuong chi', 'gay xuong ban', 'xuong gat', 'gay ngo tay', 'gay ngon tay', 'gay tay', 'gay tay trai', 'gay tay phai',
         // Joints
         'dau khop', 'viem khop', 'khop sung', 'khop yeu', 'khop chai',
         // Muscles and ligaments
