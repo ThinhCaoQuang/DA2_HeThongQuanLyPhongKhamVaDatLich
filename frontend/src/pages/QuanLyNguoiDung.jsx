@@ -719,7 +719,7 @@ export default function QuanLyNguoiDung() {
         })()}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .badge {
           padding: 4px 8px;
           border-radius: 12px;

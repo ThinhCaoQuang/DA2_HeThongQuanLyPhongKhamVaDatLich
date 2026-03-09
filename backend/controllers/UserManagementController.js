@@ -320,7 +320,8 @@ const UserManagementController = {
       // Cập nhật BacSi nếu là bác sĩ
       if (vaiTro === 'BacSi') {
         const bacSi = await BacSi.findOne({
-          where: { NguoiDungId: account.NguoiDungId }
+          where: { NguoiDungId: account.NguoiDungId },
+          transaction
         });
 
         if (bacSi) {
@@ -334,20 +335,26 @@ const UserManagementController = {
           }, { transaction });
 
           // Cập nhật chuyên khoa
-          if (chuyenKhoaIds) {
+          if (chuyenKhoaIds && Array.isArray(chuyenKhoaIds)) {
+            // Xóa tất cả chuyên khoa cũ
             await BacSiChuyenKhoa.destroy({
               where: { BacSiId: bacSi.BacSiId },
               transaction
             });
 
+            // Thêm chuyên khoa mới (convert to integer)
             if (chuyenKhoaIds.length > 0) {
-              await BacSiChuyenKhoa.bulkCreate(
-                chuyenKhoaIds.map(ckId => ({
-                  BacSiId: bacSi.BacSiId,
-                  ChuyenKhoaId: ckId
-                })),
-                { transaction }
-              );
+              const specialtyIds = chuyenKhoaIds.map(id => parseInt(id) || id).filter(id => id);
+              
+              if (specialtyIds.length > 0) {
+                await BacSiChuyenKhoa.bulkCreate(
+                  specialtyIds.map(ckId => ({
+                    BacSiId: bacSi.BacSiId,
+                    ChuyenKhoaId: ckId
+                  })),
+                  { transaction }
+                );
+              }
             }
           }
         }
