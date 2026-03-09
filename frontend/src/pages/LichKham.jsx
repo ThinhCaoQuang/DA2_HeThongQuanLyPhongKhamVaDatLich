@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import apiClient from '../services/api'
 import { ToastContext } from '../context/ToastContext'
+import { AuthContext } from '../context/AuthContext'
 import { validateLichKham, hasErrors } from '../utils/validation'
 import SpecialtyRecommendation from '../components/SpecialtyRecommendation'
 import '../styles/list.css'
@@ -9,6 +10,7 @@ import '../styles/list.css'
 export default function LichKham() {
   const navigate = useNavigate()
   const { success, error: showError } = useContext(ToastContext)
+  const { user } = useContext(AuthContext)
   const [danhsachlichkham, setDanhSachLichKham] = useState([])
   const [danhsachbenhnhan, setDanhSachBenhNhan] = useState([])
   const [danhsachchuyenkhoa, setDanhSachChuyenKhoa] = useState([])
@@ -440,33 +442,38 @@ export default function LichKham() {
               </div>
             </div>
 
-            {/* AI-powered specialty recommendation component */}
-            {dulieuform.benhnhanid && (
-              <SpecialtyRecommendation onSelectSpecialty={xulyChonChuyenKhoa} onStatusChange={xulyCapNhatTrangThaiAI} />
-            )}
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="chuyenkhoanid">Chuyên Khoa *</label>
-                <select
-                  id="chuyenkhoanid"
-                  name="chuyenkhoanid"
-                  value={dulieuform.chuyenkhoanid}
-                  onChange={xulyThayDoiInput}
-                  className={loisuform.chuyenkhoanid ? 'input-error' : ''}
-                >
-                  <option value="">-- Chọn chuyên khoa --</option>
-                  {danhsachchuyenkhoa.map((chuyenkhoa) => (
-                    <option key={chuyenkhoa.ChuyenKhoaId} value={chuyenkhoa.ChuyenKhoaId}>
-                      {chuyenkhoa.TenChuyenKhoa}
-                    </option>
-                  ))}
-                </select>
-                {loisuform.chuyenkhoanid && (
-                  <div className="field-error">{loisuform.chuyenkhoanid}</div>
+            {/* Show specialty section only for non-LeTan users */}
+            {user?.role !== 'LeTan' && (
+              <>
+                {/* AI-powered specialty recommendation component */}
+                {dulieuform.benhnhanid && (
+                  <SpecialtyRecommendation onSelectSpecialty={xulyChonChuyenKhoa} onStatusChange={xulyCapNhatTrangThaiAI} />
                 )}
-              </div>
-            </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="chuyenkhoanid">Chuyên Khoa *</label>
+                    <select
+                      id="chuyenkhoanid"
+                      name="chuyenkhoanid"
+                      value={dulieuform.chuyenkhoanid}
+                      onChange={xulyThayDoiInput}
+                      className={loisuform.chuyenkhoanid ? 'input-error' : ''}
+                    >
+                      <option value="">-- Chọn chuyên khoa --</option>
+                      {danhsachchuyenkhoa.map((chuyenkhoa) => (
+                        <option key={chuyenkhoa.ChuyenKhoaId} value={chuyenkhoa.ChuyenKhoaId}>
+                          {chuyenkhoa.TenChuyenKhoa}
+                        </option>
+                      ))}
+                    </select>
+                    {loisuform.chuyenkhoanid && (
+                      <div className="field-error">{loisuform.chuyenkhoanid}</div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="form-row">
               <div className="form-group">
