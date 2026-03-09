@@ -59,19 +59,25 @@ async function useGoogleGeminiForRecommendation(symptoms) {
     const prompt = `Bạn là một bác sĩ chẩn đoán giỏi. Dựa trên triệu chứng mà bệnh nhân mô tả, hãy giới thiệu 3-5 chuyên khoa y tế phù hợp nhất theo thứ tự ưu tiên.
 
 DANH SÁCH CÁC CHUYÊN KHOA:
-1. Tim mạch (Cardiology) - Nhịp tim, đau ngực, huyết áp, yếu tay chân
-2. Da liễu (Dermatology) - Mụn, nổi mẩn, ngứa, nám, sẹo da
-3. Nhi khoa (Pediatrics) - Trẻ em, development issues, sốt cao ở trẻ
-4. Nha khoa (Dentistry) - Răng, nướu, miệng, nha vấn đề
-5. Tai Mũi Họng (ENT) - Tai, mũi, họng, giọng khe, amidan, nứt viêm
-6. Nội khoa (Internal Medicine) - Tiểu đường, huyết áp, sốt, cảm cúm, buồn nôn
-7. Chỉnh hình (Orthopedics) - Gãy xương, đau cột sống, đau khớp
-8. Phụ khoa (Gynecology) - Kinh nguyệt, mang thai, phụ nữ vấn đề
-9. Tiêu hoá (Gastroenterology) - Đau bụng, tiêu chảy, buồn nôn, ợ chua, gan
-10. Tâm thần (Psychiatry) - Đau đầu, chóng mặt, lo âu, stress, mất ngủ, trầm cảm
-11. Hô hấp (Respiratory) - Ho, sốt, khó thở, viêm phổi, hen suyễn
+1. Tim mạch (Cardiology) - Nhịp tim, đau ngực, huyết áp cao, yếu tay chân, chóng mặt liên quan tim
+2. Da liễu (Dermatology) - Mụn, nổi mẩn, ngứa, nám, sẹo da, viêm da
+3. Nhi khoa (Pediatrics) - CHỈ cho TRẺ EM dưới 12 tuổi: sốt cao, ho, tiêu chảy ở trẻ, phát triển bất thường
+4. Nha khoa (Dentistry) - Đau răng, mảng bám, chảy máu nướu, viêm lợi, mẻ xương hàm
+5. Tai Mũi Họng (ENT) - Ù tai, chảy máu mũi, ho kéo dài, hạt giọng, viêm amidan, nứt họng
+6. Nội khoa (Internal Medicine) - Sốt, cảm cúm, cô đặc, chán ăn, yếu cơ thể, buồn nôn (không liên quan tiêu hóa)
+7. Chỉnh hình (Orthopedics) - Gãy xương, bong gân, đau cột sống, đau khớp, chấn thương
+8. Phụ khoa (Gynecology) - Kinh nguyệt bất thường, mang thai, đau vùng chậu, khí hư
+9. Tiêu hoá (Gastroenterology) - Đau bụng, tiêu chảy ở người lớn, nôn, ợ chua, chứng ợ hơi, táo bón, gan
+10. Tâm thần (Psychiatry) - Đau đầu, chóng mặt, lo âu, stress, mất ngủ, trầm cảm, rối loạn tâm thần
+11. Hô hấp (Respiratory) - Ho, sốt, khó thở, viêm phổi, hen suyễn, khó thở, đau ngực khi ho
 
 TRIỆU CHỨNG CỦA BỆNH NHÂN: "${symptoms}"
+
+LƯU Ý QUAN TRỌNG:
+- Nhi khoa CHỈ dành cho TRẺ EM. Nếu không nhắc tới tuổi trẻ em, KHÔNG chọn Nhi khoa
+- Đau bụng + tiêu chảy + buồn nôn → TIÊU HÓA
+- Sốt ở người lớn → NỘI KHOA hoặc CẤP CỨU (nếu sốt rất cao)
+- Hãy ưu tiên chuyên khoa CHÍNH XÁC NHẤT theo triệu chứng
 
 Phân tích và trả lời dưới dạng JSON (CHỈ JSON, không có text khác):
 {
@@ -79,7 +85,7 @@ Phân tích và trả lời dưới dạng JSON (CHỈ JSON, không có text kh�
     {"specialty": "Tên chuyên khoa tiếng Việt", "confidence": 0.95, "reason": "Giải thích ngắn gọn"},
     ...
   ]
-}`;
+};
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     console.log('Calling endpoint:', endpoint.substring(0, 80) + '...');
@@ -189,14 +195,15 @@ function fallbackKeywordMatching(symptoms) {
     {
       specialty: 'Nhi khoa',
       keywords: [
-        // Age indicators
-        'tre em', 'em be', 'be', 'nhi', 'tre', 'tre so sinh', 'tre sot sinh',
-        // Common pediatric conditions
-        'sot cao o tre', 'sot o be', 'sot', 'tieu chay o tre', 'tieu chay tre em', 'cam cum tre', 'cam cum',
+        // Age indicators - MUST HAVE at least one of these for pediatrics
+        'tre em', 'em be', 'be', 'nhi', 'tre', 'tre so sinh', 'tre sot sinh', 'con', 'co hanh',
+        'tuoi', 'tuoi tho', 'be trai', 'be gai',
+        // Common pediatric conditions (ONLY if age indicator found)
+        'sot cao o tre', 'sot o be', 'cam cum tre', 'ho ga', 'tieu chay tre em',
         // Developmental issues
         'phat trien tre', 'tre chap chung', 'di chuyen kho khan', 'noi nho tre', 'khong hoc duoc',
         // Specific conditions
-        'ho ga', 'dong kinh o tre', 'co giat o tre', 'benh tim bam sinh', 'di tac tim', 'soi', 'tieu tiet',
+        'dong kinh o tre', 'co giat o tre', 'benh tim bam sinh', 'di tac tim', 'soi', 'tieu tiet',
         // Behavioral
         'quay khoc', 'khoc nhieu', 'binh bong', 'an khong yeu thich', 'nuot kho khan'
       ],
@@ -309,8 +316,9 @@ function fallbackKeywordMatching(symptoms) {
         'da day', 'da day non', 'viem da day', 'da day yeu', 'tao bon', 'tao bon da day',
         // Vomiting and nausea
         'buon non', 'non', 'non biem', 'non mua', 'sot non', 'non gay',
-        // Bowel issues
+        // Bowel issues - VERY IMPORTANT FOR THIS CASE
         'tieu chay', 'tieu chay dai', 'tieu chay tiem', 'tao bon', 'di tieu kho', 'kho tieu',
+        'di ngoai', 'di ngoai nhieu', 'di tieu nhieu', 'phan', 'phan chi',
         // Abdominal
         'dau bung', 'bung', 'dau bung theo sau an', 'tro tro bung', 'chuong bung', 'day bung',
         // Digestive
