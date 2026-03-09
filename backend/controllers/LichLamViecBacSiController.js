@@ -10,7 +10,37 @@ const LichLamViecBacSiController = {
       const offset = (page - 1) * limit;
 
       const where = {};
-      if (bacSiId) where.BacSiId = bacSiId;
+      
+      // If user is a BacSi, only show their own schedule
+      if (req.user.role === 'BacSi') {
+        const account = await TaiKhoan.findOne({
+          where: { TaiKhoanId: req.user.id }
+        });
+        
+        if (!account) {
+          return res.status(404).json({
+            success: false,
+            message: 'Không tìm thấy tài khoản'
+          });
+        }
+        
+        const myBacSi = await BacSi.findOne({
+          where: { NguoiDungId: account.NguoiDungId }
+        });
+        
+        if (!myBacSi) {
+          return res.status(404).json({
+            success: false,
+            message: 'Không tìm thấy hồ sơ bác sĩ của tài khoản này'
+          });
+        }
+        
+        where.BacSiId = myBacSi.BacSiId;
+      } else if (bacSiId) {
+        // For Admin/LeTan, allow filtering by bacSiId if provided
+        where.BacSiId = bacSiId;
+      }
+
       if (ngayLamViec) where.NgayLamViec = ngayLamViec;
 
       const { count, rows } = await LichLamViecBacSi.findAndCountAll({
@@ -64,6 +94,24 @@ const LichLamViecBacSiController = {
           success: false,
           message: 'Lịch làm việc không tìm thấy'
         });
+      }
+
+      // If user is BacSi, check if it's their own schedule
+      if (req.user.role === 'BacSi') {
+        const account = await TaiKhoan.findOne({
+          where: { TaiKhoanId: req.user.id }
+        });
+        
+        const myBacSi = await BacSi.findOne({
+          where: { NguoiDungId: account.NguoiDungId }
+        });
+
+        if (!myBacSi || myBacSi.BacSiId !== schedule.BacSiId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Bạn không có quyền xem lịch làm việc của đồng nghiệp'
+          });
+        }
       }
 
       res.status(200).json({
