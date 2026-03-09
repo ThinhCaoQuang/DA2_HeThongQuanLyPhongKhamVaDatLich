@@ -67,8 +67,7 @@ export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusCha
 
   return (
     <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-      <h4 style={{ marginTop: 0, marginBottom: '10px', color: '#333' }}>AI Gợi Ý Chuyên Khoa</h4>
-      <label style={{ fontSize: '0.9em', color: '#666', margin: '0 0 10px 0', display: 'block' }}>Triệu chứng</label>
+      <h4 style={{ marginTop: 0, marginBottom: '10px', color: '#333' }}>Triệu Chứng</h4>
 
       <textarea
         placeholder=""

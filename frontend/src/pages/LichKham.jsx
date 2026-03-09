@@ -570,8 +570,8 @@ export default function LichKham() {
               </div>
             </div>
 
-            {/* Show manual symptom field only if AI failed or is not active */}
-            {aiStatus !== 'success' && (
+            {/* Show manual symptom field only if no patient is selected (AI component not active) and AI didn't succeed */}
+            {!dulieuform.benhnhanid && aiStatus !== 'success' && (
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="trieuChung">Triệu Chứng</label>
