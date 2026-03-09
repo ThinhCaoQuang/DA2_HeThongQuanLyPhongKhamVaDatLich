@@ -511,7 +511,18 @@ export default function LichKham() {
                     id="chuyenkhoanid"
                     name="chuyenkhoanid"
                     value={dulieuform.chuyenkhoanid}
-                    onChange={xulyThayDoiInput}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const selectedSpecialty = danhsachchuyenkhoa.find(s => s.ChuyenKhoaId.toString() === e.target.value)
+                        if (selectedSpecialty) {
+                          xulyChonChuyenKhoa(selectedSpecialty)
+                        }
+                      } else {
+                        setDuLieuForm(prev => ({ ...prev, chuyenkhoanid: '' }))
+                        setDanhSachBacSi([])
+                        setDanhSachGioVaChon([])
+                      }
+                    }}
                     className={loisuform.chuyenkhoanid ? 'input-error' : ''}
                   >
                     <option value="">-- Chọn chuyên khoa --</option>
