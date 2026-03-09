@@ -487,37 +487,35 @@ export default function LichKham() {
               </div>
             </div>
 
-            {/* Show specialty section only for non-LeTan users */}
-            {user?.role !== 'LeTan' && (
-              <>
-                {/* AI-powered specialty recommendation component */}
-                {dulieuform.benhnhanid && (
-                  <SpecialtyRecommendation onSelectSpecialty={xulyChonChuyenKhoa} onStatusChange={xulyCapNhatTrangThaiAI} />
-                )}
+            {/* AI-powered specialty recommendation component - Show for all users */}
+            {dulieuform.benhnhanid && (
+              <SpecialtyRecommendation onSelectSpecialty={xulyChonChuyenKhoa} onStatusChange={xulyCapNhatTrangThaiAI} />
+            )}
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="chuyenkhoanid">Chuyên Khoa *</label>
-                    <select
-                      id="chuyenkhoanid"
-                      name="chuyenkhoanid"
-                      value={dulieuform.chuyenkhoanid}
-                      onChange={xulyThayDoiInput}
-                      className={loisuform.chuyenkhoanid ? 'input-error' : ''}
-                    >
-                      <option value="">-- Chọn chuyên khoa --</option>
-                      {danhsachchuyenkhoa.map((chuyenkhoa) => (
-                        <option key={chuyenkhoa.ChuyenKhoaId} value={chuyenkhoa.ChuyenKhoaId}>
-                          {chuyenkhoa.TenChuyenKhoa}
-                        </option>
-                      ))}
-                    </select>
-                    {loisuform.chuyenkhoanid && (
-                      <div className="field-error">{loisuform.chuyenkhoanid}</div>
-                    )}
-                  </div>
+            {/* Show specialty dropdown only for non-LeTan users */}
+            {user?.role !== 'LeTan' && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="chuyenkhoanid">Chuyên Khoa *</label>
+                  <select
+                    id="chuyenkhoanid"
+                    name="chuyenkhoanid"
+                    value={dulieuform.chuyenkhoanid}
+                    onChange={xulyThayDoiInput}
+                    className={loisuform.chuyenkhoanid ? 'input-error' : ''}
+                  >
+                    <option value="">-- Chọn chuyên khoa --</option>
+                    {danhsachchuyenkhoa.map((chuyenkhoa) => (
+                      <option key={chuyenkhoa.ChuyenKhoaId} value={chuyenkhoa.ChuyenKhoaId}>
+                        {chuyenkhoa.TenChuyenKhoa}
+                      </option>
+                    ))}
+                  </select>
+                  {loisuform.chuyenkhoanid && (
+                    <div className="field-error">{loisuform.chuyenkhoanid}</div>
+                  )}
                 </div>
-              </>
+              </div>
             )}
 
             <div className="form-row">
