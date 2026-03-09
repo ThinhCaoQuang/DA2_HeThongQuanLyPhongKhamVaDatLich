@@ -117,11 +117,7 @@ export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusCha
           gap: '8px'
         }}>
           <span>
-            Đã tự động chọn: <strong>{selectedSpecialty.dbName || selectedSpecialty.specialty}</strong>
-            <br/>
-            <span style={{ fontSize: '0.85em', marginTop: '4px', display: 'block' }}>
-              Độ tin cậy: {(selectedSpecialty.confidence * 100).toFixed(0)}%
-            </span>
+            Chuyên khoa: <strong>{selectedSpecialty.dbName || selectedSpecialty.specialty}</strong>
           </span>
         </div>
       )}
