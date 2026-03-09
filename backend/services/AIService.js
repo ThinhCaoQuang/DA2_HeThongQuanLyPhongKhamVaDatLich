@@ -63,8 +63,8 @@ DANH SÁCH CÁC CHUYÊN KHOA:
 2. Da liễu (Dermatology) - Mụn, nổi mẩn, ngứa, nám, sẹo da, viêm da
 3. Nhi khoa (Pediatrics) - CHỈ cho TRẺ EM dưới 12 tuổi: sốt cao, ho, tiêu chảy ở trẻ, phát triển bất thường
 4. Nha khoa (Dentistry) - Đau răng, mảng bám, chảy máu nướu, viêm lợi, mẻ xương hàm
-5. Tai Mũi Họng (ENT) - Ù tai, chảy máu mũi, ho kéo dài, hạt giọng, viêm amidan, nứt họng
-6. Nội khoa (Internal Medicine) - Sốt, cảm cúm, cô đặc, chán ăn, yếu cơ thể, buồn nôn (không liên quan tiêu hóa)
+5. Tai Mũi Họng (ENT) - CHỈ CHO: Ù tai, chảy máu mũi, ho kéo dài, hạt giọng, viêm amidan, nứt họng, chảy máu tai, chảy dịch tai
+6. Nội khoa (Internal Medicine) - Sốt, cảm cúm, cô đặc, chán ăn, yếu cơ thể, buồn nôn (không liên quan tiêu hóa), chóng mặt tổng quát
 7. Chỉnh hình (Orthopedics) - Gãy xương, bong gân, đau cột sống, đau khớp, chấn thương
 8. Phụ khoa (Gynecology) - Kinh nguyệt bất thường, mang thai, đau vùng chậu, khí hư
 9. Tiêu hoá (Gastroenterology) - Đau bụng, tiêu chảy ở người lớn, nôn, ợ chua, chứng ợ hơi, táo bón, gan
@@ -76,6 +76,11 @@ TRIỆU CHỨNG CỦA BỆNH NHÂN: "${symptoms}"
 LƯU Ý QUAN TRỌNG:
 - Nhi khoa CHỈ dành cho TRẺ EM. Nếu không nhắc tới tuổi trẻ em, KHÔNG chọn Nhi khoa
 - Đau bụng + tiêu chảy + buồn nôn → TIÊU HÓA
+- CHÓNG MẶT: KHÔNG PHẢI là TAI MŨI HỌNG (trừ khi có triệu chứng tai như ù tai, chảy máu/dịch từ tai)
+- Chóng mặt + Sốt → NỘI KHOA
+- Chóng mặt + Đau đầu + Lo âu → TÂM THẦN
+- Chóng mặt + Đau ngực + Huyết áp cao → TIM MẠCH
+- Chóng mặt trơ → NỘI KHOA
 - Sốt ở người lớn → NỘI KHOA hoặc CẤP CỨU (nếu sốt rất cao)
 - Hãy ưu tiên chuyên khoa CHÍNH XÁC NHẤT theo triệu chứng
 
