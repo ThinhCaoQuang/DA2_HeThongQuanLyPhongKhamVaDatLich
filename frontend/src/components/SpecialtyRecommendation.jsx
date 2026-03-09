@@ -66,112 +66,136 @@ export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusCha
   }
 
   return (
-    <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-      <h4 style={{ marginTop: 0, marginBottom: '10px', color: '#333' }}>Triệu Chứng</h4>
-
-      <textarea
-        placeholder=""
-        value={symptoms}
-        onChange={(e) => setSymptoms(e.target.value)}
-        style={{
-          width: '100%',
-          padding: '10px',
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-          fontFamily: 'Arial, sans-serif',
-          minHeight: '80px',
-          resize: 'vertical',
-          boxSizing: 'border-box'
-        }}
-      />
+    <>
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="symptoms">Triệu Chứng</label>
+          <textarea
+            id="symptoms"
+            placeholder=""
+            value={symptoms}
+            onChange={(e) => setSymptoms(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontFamily: 'Arial, sans-serif',
+              minHeight: '80px',
+              resize: 'vertical',
+              boxSizing: 'border-box'
+            }}
+          />
+        </div>
+      </div>
 
       {/* Status messages */}
       {loading && status === 'analyzing' && (
-        <div style={{
-          marginTop: '10px',
-          padding: '12px',
-          backgroundColor: '#e3f2fd',
-          border: '1px solid #2196f3',
-          borderRadius: '4px',
-          color: '#1565c0',
-          fontSize: '0.9em',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <span>Đang phân tích triệu chứng...</span>
+        <div className="form-row">
+          <div style={{
+            marginTop: '10px',
+            padding: '12px',
+            backgroundColor: '#e3f2fd',
+            border: '1px solid #2196f3',
+            borderRadius: '4px',
+            color: '#1565c0',
+            fontSize: '0.9em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <span>Đang phân tích triệu chứng...</span>
+          </div>
         </div>
       )}
 
       {status === 'success' && selectedSpecialty && (
-        <div style={{
-          marginTop: '10px',
-          padding: '12px',
-          backgroundColor: '#e8f5e9',
-          border: '1px solid #4caf50',
-          borderRadius: '4px',
-          color: '#2e7d32',
-          fontSize: '0.9em',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <span>
-            Chuyên khoa: <strong>{selectedSpecialty.dbName || selectedSpecialty.specialty}</strong>
-          </span>
+        <div className="form-row">
+          <div style={{
+            marginTop: '10px',
+            padding: '12px',
+            backgroundColor: '#e8f5e9',
+            border: '1px solid #4caf50',
+            borderRadius: '4px',
+            color: '#2e7d32',
+            fontSize: '0.9em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <span>
+              Chuyên khoa: <strong>{selectedSpecialty.dbName || selectedSpecialty.specialty}</strong>
+            </span>
+          </div>
         </div>
       )}
 
       {status === 'no-match' && (
-        <div style={{
-          marginTop: '10px',
-          padding: '12px',
-          backgroundColor: '#fff3cd',
-          border: '1px solid #ffc107',
-          borderRadius: '4px',
-          color: '#856404',
-          fontSize: '0.9em',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <span>Không tìm thấy chuyên khoa phù hợp. Vui lòng chọn chuyên khoa thủ công.</span>
+        <div className="form-row">
+          <div style={{
+            marginTop: '10px',
+            padding: '12px',
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '4px',
+            color: '#856404',
+            fontSize: '0.9em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <span>Không tìm thấy chuyên khoa phù hợp. Vui lòng chọn chuyên khoa thủ công.</span>
+          </div>
         </div>
       )}
 
       {status === 'no-recommendations' && (
-        <div style={{
-          marginTop: '10px',
-          padding: '12px',
-          backgroundColor: '#fff3cd',
-          border: '1px solid #ffc107',
-          borderRadius: '4px',
-          color: '#856404',
-          fontSize: '0.9em',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <span>Không thể phân tích triệu chứng. Vui lòng cộng lại hoặc chọn chuyên khoa thủ công.</span>
+        <div className="form-row">
+          <div style={{
+            marginTop: '10px',
+            padding: '12px',
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '4px',
+            color: '#856404',
+            fontSize: '0.9em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <span>Không thể phân tích triệu chứng. Vui lòng cộng lại hoặc chọn chuyên khoa thủ công.</span>
+          </div>
         </div>
       )}
 
       {status === 'error' && (
-        <div style={{
-          marginTop: '10px',
-          padding: '12px',
-          backgroundColor: '#ffebee',
-          border: '1px solid #f44336',
-          borderRadius: '4px',
-          color: '#c62828',
-          fontSize: '0.9em',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <span>Lỗi khi kết nối với AI. Vui lòng chọn chuyên khoa thủ công.</span>
+        <div className="form-row">
+          <div style={{
+            marginTop: '10px',
+            padding: '12px',
+            backgroundColor: '#ffebee',
+            border: '1px solid #c62828',
+            borderRadius: '4px',
+            color: '#c62828',
+            fontSize: '0.9em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <span>Lỗi khi kết nối với AI. Vui lòng chọn chuyên khoa thủ công.</span>
+          </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
