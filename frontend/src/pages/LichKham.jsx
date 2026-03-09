@@ -209,16 +209,26 @@ export default function LichKham() {
   }
 
   const xulyChonChuyenKhoa = (specialty) => {
+    const chuyenKhoaId = specialty.id.toString()
+    
+    // Set specialty
     setDuLieuForm((prev) => ({
       ...prev,
-      chuyenkhoanid: specialty.id.toString(),
+      chuyenkhoanid: chuyenKhoaId,
+      bacsiiid: '', // Reset doctor when specialty changes
+      thoigianhatdau: '', // Reset time when specialty changes
     }))
+    
+    // Clear error
     if (loisuform.chuyenkhoanid) {
       setLoiSuForm((prev) => ({
         ...prev,
         chuyenkhoanid: '',
       }))
     }
+    
+    // Auto-load doctors for selected specialty
+    taibacsitheokhoa(parseInt(chuyenKhoaId))
   }
 
   const xulyCapNhatTrangThaiAI = (status) => {
