@@ -38,22 +38,21 @@ export default function LichKham() {
     laydulieu()
   }, [])
 
-  // Load doctors when specialty changes (for admin and doctors)
+  // Load doctors when specialty changes (for admin and doctors) or when LeTan first opens form
   useEffect(() => {
-    if (user?.role === 'LeTan') {
-      // For LeTan: Load all doctors on form open
-      if (moform) {
-        taiTatCaBacSi()
-      }
-    } else {
-      // For admin and doctors: Load doctors based on specialty selection
-      if (dulieuform.chuyenkhoanid) {
-        taibacsitheokhoa(dulieuform.chuyenkhoanid)
-      } else {
-        setDanhSachBacSi([])
-        setDanhSachGioVaChon([])
-        setDuLieuForm(prev => ({ ...prev, bacsiiid: '', thoigianhatdau: '' }))
-      }
+    // If specialty is selected, load doctors for that specialty (for all users)
+    if (dulieuform.chuyenkhoanid) {
+      taibacsitheokhoa(dulieuform.chuyenkhoanid)
+    } 
+    // If no specialty selected and user is LeTan and form is open, load all doctors
+    else if (user?.role === 'LeTan' && moform) {
+      taiTatCaBacSi()
+    }
+    // Default case: clear doctor list
+    else {
+      setDanhSachBacSi([])
+      setDanhSachGioVaChon([])
+      setDuLieuForm(prev => ({ ...prev, bacsiiid: '', thoigianhatdau: '' }))
     }
   }, [dulieuform.chuyenkhoanid, moform, user?.role])
 
@@ -211,7 +210,7 @@ export default function LichKham() {
   const xulyChonChuyenKhoa = (specialty) => {
     const chuyenKhoaId = specialty.id.toString()
     
-    // Set specialty
+    // Set specialty - useEffect will handle loading doctors
     setDuLieuForm((prev) => ({
       ...prev,
       chuyenkhoanid: chuyenKhoaId,
@@ -227,8 +226,7 @@ export default function LichKham() {
       }))
     }
     
-    // Auto-load doctors for selected specialty
-    taibacsitheokhoa(parseInt(chuyenKhoaId))
+    // useEffect will automatically load doctors when dulieuform.chuyenkhoanid changes
   }
 
   const xulyCapNhatTrangThaiAI = (status) => {
