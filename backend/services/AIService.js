@@ -160,43 +160,7 @@ Phân tích và trả lời dưới dạng JSON (CHỈ JSON, không có text kh�
   }
 }
 
-// Symptom pattern recognition for better accuracy
-const symptomPatterns = {
-  'Tim mach': [
-    /dau nguc.*huyet ap|huyet ap.*dau nguc/, // Chest pain + high BP = cardiac
-    /tim.*tac mach|tac mach.*tim/, // Heart + rhythm = cardiac  
-    /kho tho.*dau nguc|dau nguc.*kho tho/, // Shortness of breath + chest pain = cardiac
-    /chong mat.*dau nguc|dau nguc.*chong mat/, // Dizziness + chest pain = cardiac
-  ],
-  'Hô hấp': [
-    /ho.*sot|sot.*ho/, // Cough + fever = respiratory
-    /ho.*khó tho|khó tho.*ho/, // Cough + difficulty breathing = respiratory
-    /ho khan.*tho|tho.*ho khan/, // Dry cough + breathing = respiratory
-    /sot.*phoi|phoi.*sot/, // Fever + pneumonia = respiratory
-  ],
-  'Tiêu hoá': [
-    /dau bung.*tieu chay|tieu chay.*dau bung/, // Abdominal pain + diarrhea = GI
-    /buon non.*dau bung|dau bung.*buon non/, // Nausea + abdominal pain = GI
-    /tieu chay.*non|non.*tieu chay/, // Diarrhea + vomiting = GI severe
-    /di ngoai.*dau bung|dau bung.*di ngoai/, // Frequent bowel + abdominal pain = GI
-  ],
-  'Nội khoa': [
-    /sot.*met moi|met moi.*sot/, // Fever + fatigue = internal
-    /sot.*ho.*chong mat/, // Fever + cough + dizziness = general illness
-    /tieu duong.*khao nuoc|khao nuoc.*tieu duong/, // Diabetes symptoms
-  ],
-  'Tâm thần': [
-    /dau dau.*lo au|lo au.*dau dau/, // Headache + anxiety = psychological
-    /mat ngu.*stress|stress.*mat ngu/, // Sleep issues + stress
-    /chong mat.*lo au|lo au.*chong mat/, // Dizziness + anxiety = psychological
-  ],
-  'Chỉnh hình': [
-    /gay xuong.*dau|dau.*gay xuong/, // Fracture + pain
-    /bong gan.*sung|sung.*bong gan/, // Sprain + swelling
-  ]
-};
-
-// Enhanced keyword-based matching with comprehensive medical terminology and pattern recognition
+// Enhanced keyword-based matching with comprehensive medical terminology
 function fallbackKeywordMatching(symptoms) {
   const symptomsLower = symptoms.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
@@ -437,40 +401,17 @@ function fallbackKeywordMatching(symptoms) {
         };
       }
       
-      // Improved scoring with compound symptom detection
-      let baseScore = matchCount / spec.keywords.length;
-      
-      // Bonus for keyword frequency (symptoms mentioned multiple times)
-      const keywordFrequency = matchedKeywords.filter((k, i, arr) => arr.indexOf(k) === i).length / matchedKeywords.length;
-      baseScore = baseScore * (0.8 + keywordFrequency * 0.2);
-      
-      // Detect symptom patterns (e.g., "đau + sốt + ho" together for respiratory)
-      let patternBonus = 0;
-      const patterns = symptomPatterns[spec.specialty] || [];
-      const matchedPatterns = patterns.filter(pattern => pattern.test(symptomsLower)).length;
-      if (matchedPatterns > 0) {
-        patternBonus = Math.min(0.25, matchedPatterns * 0.12); // Up to +25% for pattern matching
-      }
-      
-      // Additional bonus for multiple symptoms together
-      if (matchCount >= 3) patternBonus += 0.05; // Multiple symptoms together (+5%)
-      if (matchCount >= 5) patternBonus += 0.10; // Many symptoms together (+10%)
-      
-      // Penalty for keyword ambiguity (some keywords appear in multiple specialties)
-      const ambiguousKeywords = ['sot', 'met moi', 'buon non', 'dau', 'yeu', 'chong mat'];
-      const ambiguityCount = matchedKeywords.filter(k => ambiguousKeywords.includes(k)).length;
-      const ambiguityPenalty = ambiguityCount > 0 ? (ambiguityCount * 0.04) : 0;
-      
-      const finalScore = Math.max(0, (baseScore + patternBonus - ambiguityPenalty) * spec.confidence);
-      const weightedScore = Math.min(0.98, finalScore);
+      // Keyword matching score: count vs total, weighted by specialty base confidence
+      const baseScore = matchCount / spec.keywords.length;
+      const weightedScore = Math.min(0.95, 0.3 + baseScore * 0.65) * spec.confidence;
       
       return {
         specialty: spec.specialty,
-        confidence: Math.max(0.1, weightedScore),
-        reason: `${matchCount} trieu chung` + (matchedPatterns > 0 ? ` + ${matchedPatterns} mau ket hop` : '')
+        confidence: Math.min(0.98, weightedScore),
+        reason: `${matchCount} trieu chung phu hop`
       };
     })
-    .filter(rec => rec.confidence > 0.18)
+    .filter(rec => rec.confidence > 0.15)
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, 5);
 
