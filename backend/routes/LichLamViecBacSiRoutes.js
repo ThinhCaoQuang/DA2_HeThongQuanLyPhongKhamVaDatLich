@@ -6,7 +6,8 @@ const router = express.Router();
 
 // All routes require authentication
 router.use(AuthMiddleware.verifyToken);
-router.use(AuthMiddleware.checkRole(['QuanTri', 'LeTan', 'BacSi']));
+router.use(AuthMiddleware.checkRole(['QuanTri', 'QuanLy', 'LeTan', 'BacSi']));
+
 
 // CRUD operations
 router.get('/', LichLamViecBacSiController.getAll);

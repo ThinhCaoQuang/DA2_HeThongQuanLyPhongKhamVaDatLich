@@ -2,15 +2,14 @@ import { useState, useEffect } from 'react'
 import apiClient from '../services/api'
 import '../styles/list.css'
 
-export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusChange }) {
-  const [symptoms, setSymptoms] = useState('')
+export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusChange, symptoms, onSymptomsChange }) {
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('') // 'analyzing', 'success', 'error'
   const [selectedSpecialty, setSelectedSpecialty] = useState(null)
 
   // Auto-recommend when user stops typing (debounce 2 seconds)
   useEffect(() => {
-    if (!symptoms.trim()) {
+    if (!symptoms?.trim()) {
       setStatus('')
       setSelectedSpecialty(null)
       onStatusChange?.('')
@@ -73,8 +72,8 @@ export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusCha
           <textarea
             id="symptoms"
             placeholder=""
-            value={symptoms}
-            onChange={(e) => setSymptoms(e.target.value)}
+            value={symptoms || ''}
+            onChange={(e) => onSymptomsChange?.(e.target.value)}
             style={{
               width: '100%',
               padding: '10px',

@@ -7,9 +7,9 @@ const router = express.Router();
 // All routes require authentication
 router.use(AuthMiddleware.verifyToken);
 
-// READ operations - allowed for QuanTri, LeTan and BacSi
-router.get('/', AuthMiddleware.checkRole(['QuanTri', 'LeTan', 'BacSi']), BacSiController.getAll);
-router.get('/:id', AuthMiddleware.checkRole(['QuanTri', 'LeTan', 'BacSi']), BacSiController.getById);
+// READ operations - allowed for QuanTri, QuanLy, LeTan and BacSi
+router.get('/', AuthMiddleware.checkRole(['QuanTri', 'QuanLy', 'LeTan', 'BacSi']), BacSiController.getAll);
+router.get('/:id', AuthMiddleware.checkRole(['QuanTri', 'QuanLy', 'LeTan', 'BacSi']), BacSiController.getById);
 
 // CREATE, UPDATE, DELETE operations - only for QuanTri (Admin)
 router.post('/', AuthMiddleware.checkRole(['QuanTri']), BacSiController.create);

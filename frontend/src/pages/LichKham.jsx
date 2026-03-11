@@ -82,7 +82,13 @@ export default function LichKham() {
         console.log('First apt BacSi NguoiDung:', lichkhamRes.data.data[0].BacSi?.NguoiDung)
       }
       
-      setDanhSachLichKham(lichkhamRes.data.data)
+      // Filter out appointments that have already passed
+      const now = new Date()
+      const lichkhamSapToi = lichkhamRes.data.data.filter(lk => {
+        return new Date(lk.ThoiGianBatDau) > now
+      })
+      
+      setDanhSachLichKham(lichkhamSapToi)
       setDanhSachBenhNhan(benhnhanRes.data.data)
       setDanhSachChuyenKhoa(chuyenkhoaRes.data.data)
     } catch (err) {
@@ -147,6 +153,7 @@ export default function LichKham() {
       const thoigian = response.data.data || []
       
       // Convert schedule to available time slots
+      const now = new Date()
       const thoigianhochinh = thoigian.flatMap(slot => {
         const date = new Date(slot.NgayLamViec)
         const startTime = slot.GioBatDau ? slot.GioBatDau.substring(0, 5) : '08:00'
@@ -171,6 +178,10 @@ export default function LichKham() {
           currentTime += 30
         }
         return times
+      }).filter(slot => {
+        // Filter out slots that have already passed
+        const slotTime = new Date(slot.value)
+        return slotTime > now
       })
       
       setDanhSachGioVaChon(thoigianhochinh)
@@ -251,10 +262,12 @@ export default function LichKham() {
         BacSiId: dulieuform.bacsiiid ? parseInt(dulieuform.bacsiiid) : null,
         ChuyenKhoaId: parseInt(dulieuform.chuyenkhoanid),
         ThoiGianBatDau: dulieuform.thoigianhatdau,
-        TrieuChung: dulieuform.trieuChung,
-        GhiChu: dulieuform.ghiChu,
+        TrieuChung: dulieuform.trieuChung || '',
+        GhiChu: dulieuform.ghiChu || '',
       }
+      console.log('Form state before send:', dulieuform)
       console.log('Sending appointment:', payload)
+      console.log('TrieuChung value:', dulieuform.trieuChung, 'Type:', typeof dulieuform.trieuChung)
       
       if (idchinh) {
         await apiClient.put(`/lichkham/${idchinh}`, payload)
@@ -329,9 +342,10 @@ export default function LichKham() {
 
   const xulyHuyLichKham = async (id) => {
     if (!window.confirm('Bạn có chắc muốn huỷ lịch khám này?')) return
+    const lyDoHuy = window.prompt('Lý do hủy (có thể bỏ trống):') ?? ''
 
     try {
-      await apiClient.post(`/lichkham/${id}/cancel`)
+      await apiClient.post(`/lichkham/${id}/cancel`, { lyDoHuy })
       success('Huỷ lịch khám thành công')
       laydulieu()
     } catch (err) {
@@ -380,6 +394,7 @@ export default function LichKham() {
     const trangthaibando = {
       'ChoXacNhan': { label: 'Chờ xác nhận', color: 'warning' },
       'DaXacNhan': { label: 'Đã xác nhận', color: 'success' },
+      'DangKham': { label: 'Đang khám', color: 'primary' },
       'DaKham': { label: 'Đã khám', color: 'success' },
       'DaHuy': { label: 'Đã hủy', color: 'danger' },
     }
@@ -497,7 +512,12 @@ export default function LichKham() {
 
             {/* AI-powered specialty recommendation component - Show for all users */}
             {dulieuform.benhnhanid && (
-              <SpecialtyRecommendation onSelectSpecialty={xulyChonChuyenKhoa} onStatusChange={xulyCapNhatTrangThaiAI} />
+              <SpecialtyRecommendation 
+                onSelectSpecialty={xulyChonChuyenKhoa} 
+                onStatusChange={xulyCapNhatTrangThaiAI}
+                symptoms={dulieuform.trieuChung}
+                onSymptomsChange={(value) => setDuLieuForm(prev => ({ ...prev, trieuChung: value }))}
+              />
             )}
 
             {/* Show specialty dropdown only for non-LeTan users */}
@@ -589,26 +609,24 @@ export default function LichKham() {
               </div>
             </div>
 
-            {/* Show manual symptom field only if no patient is selected (AI component not active) and AI didn't succeed */}
-            {!dulieuform.benhnhanid && aiStatus !== 'success' && (
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="trieuChung">Triệu Chứng</label>
-                  <textarea
-                    id="trieuChung"
-                    name="trieuChung"
-                    value={dulieuform.trieuChung}
-                    onChange={xulyThayDoiInput}
-                    rows="3"
-                    className={loisuform.trieuChung ? 'input-error' : ''}
-                    placeholder="Mô tả triệu chứng (nếu có)"
-                  />
-                  {loisuform.trieuChung && (
-                    <div className="field-error">{loisuform.trieuChung}</div>
-                  )}
-                </div>
+            {/* Symptom field - always visible */}
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="trieuChung">Triệu Chứng</label>
+                <textarea
+                  id="trieuChung"
+                  name="trieuChung"
+                  value={dulieuform.trieuChung}
+                  onChange={xulyThayDoiInput}
+                  rows="3"
+                  className={loisuform.trieuChung ? 'input-error' : ''}
+                  placeholder="Mô tả triệu chứng (nếu có)"
+                />
+                {loisuform.trieuChung && (
+                  <div className="field-error">{loisuform.trieuChung}</div>
+                )}
               </div>
-            )}
+            </div>
 
             <div className="form-row">
               <div className="form-group">
@@ -689,12 +707,28 @@ export default function LichKham() {
                     )}
                     {lichkham.TrangThai !== 'ChoXacNhan' && (
                       <>
-                        {lichkham.TrangThai === 'DaXacNhan' && (
+                        {lichkham.TrangThai === 'DaXacNhan' && user?.role !== 'LeTan' && (
+                          <>
+                            <button
+                              className="btn-small btn-primary"
+                              onClick={() => xulyTaoHoSo(lichkham.LichKhamId)}
+                            >
+                              Tạo Hồ Sơ
+                            </button>
+                            <button
+                              className="btn-small btn-warning"
+                              onClick={() => xulyHuyLichKham(lichkham.LichKhamId)}
+                            >
+                              Huỷ
+                            </button>
+                          </>
+                        )}
+                        {lichkham.TrangThai === 'DaXacNhan' && user?.role === 'LeTan' && (
                           <button
-                            className="btn-small btn-primary"
-                            onClick={() => xulyTaoHoSo(lichkham.LichKhamId)}
+                            className="btn-small btn-warning"
+                            onClick={() => xulyHuyLichKham(lichkham.LichKhamId)}
                           >
-                            Tạo Hồ Sơ
+                            Huỷ
                           </button>
                         )}
                         <button

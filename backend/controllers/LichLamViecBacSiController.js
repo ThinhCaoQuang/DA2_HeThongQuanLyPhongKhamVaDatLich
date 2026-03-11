@@ -1,4 +1,4 @@
-const { LichLamViecBacSi, BacSi, TaiKhoan, NguoiDung } = require('../models');
+const { LichLamViecBacSi, BacSi, TaiKhoan, NguoiDung, LichKham } = require('../models');
 const { Op } = require('sequelize');
 const db = require('../config/database');
 
@@ -6,7 +6,7 @@ const LichLamViecBacSiController = {
   // Get all schedules
   getAll: async (req, res) => {
     try {
-      const { page = 1, limit = 10, bacSiId, ngayLamViec } = req.query;
+      const { page = 1, limit = 50, bacSiId, ngayLamViec } = req.query;
       const offset = (page - 1) * limit;
 
       console.log('getAll called - req.user:', req.user);
@@ -50,7 +50,13 @@ const LichLamViecBacSiController = {
         where.BacSiId = bacSiId;
       }
 
-      if (ngayLamViec) where.NgayLamViec = ngayLamViec;
+      if (ngayLamViec) {
+        const dayStart = new Date(ngayLamViec);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(ngayLamViec);
+        dayEnd.setHours(23, 59, 59, 999);
+        where.NgayLamViec = { [Op.between]: [dayStart, dayEnd] };
+      }
 
       const { count, rows } = await LichLamViecBacSi.findAndCountAll({
         where,
@@ -65,12 +71,40 @@ const LichLamViecBacSiController = {
             ]
           }
         ],
-        order: [['NgayLamViec', 'DESC'], ['CaLam', 'ASC']]
+        order: [['NgayLamViec', 'ASC'], ['CaLam', 'ASC']]
       });
+
+      // Tính số lịch đã đặt cho từng ca làm việc
+      const rowsWithCount = await Promise.all(rows.map(async (llv) => {
+        const obj = llv.toJSON();
+        const ngay = new Date(obj.NgayLamViec);
+        const dayStart = new Date(ngay); dayStart.setHours(0, 0, 0, 0);
+        const dayEnd   = new Date(ngay); dayEnd.setHours(23, 59, 59, 999);
+
+        const gioStart = obj.GioBatDau; // e.g. "07:00:00"
+        const gioEnd   = obj.GioKetThuc;
+
+        const soLichDaDat = await LichKham.count({
+          where: {
+            BacSiId: obj.BacSiId,
+            TrangThai: { [Op.notIn]: ['DaHuy'] },
+            ThoiGianBatDau: { [Op.between]: [dayStart, dayEnd] },
+            ...(gioStart && gioEnd ? {
+              [Op.and]: db.literal(
+                `TIME(ThoiGianBatDau) >= '${gioStart}' AND TIME(ThoiGianBatDau) < '${gioEnd}'`
+              )
+            } : {})
+          }
+        });
+
+        obj.soLichDaDat = soLichDaDat;
+        obj.soChoConLai = Math.max(0, (obj.SoBenhNhanToiDa || 10) - soLichDaDat);
+        return obj;
+      }));
 
       res.status(200).json({
         success: true,
-        data: rows,
+        data: rowsWithCount,
         pagination: {
           total: count,
           page: parseInt(page),

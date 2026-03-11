@@ -20,7 +20,6 @@ export default function Sidebar() {
       return [
         ...commonItems,
         { path: '/today-appointments', label: 'Lịch Khám Hôm Nay' },
-        { path: '/schedule-coordination', label: 'Điều Phối Lịch' },
         { path: '/patients', label: 'Bệnh Nhân' },
         { path: '/appointments', label: 'Lịch Khám' },
         { path: '/doctors', label: 'Danh Sách Bác Sĩ' },

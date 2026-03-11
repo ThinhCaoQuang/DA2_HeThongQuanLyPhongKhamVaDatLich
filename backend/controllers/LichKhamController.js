@@ -32,6 +32,9 @@ const LichKhamController = {
       if (status) where.TrangThai = status;
       if (benhNhanId) where.BenhNhanId = benhNhanId;
       if (bacSiId) where.BacSiId = bacSiId;
+      
+      // Filter out appointments that have already passed
+      where.ThoiGianBatDau = { [Op.gt]: new Date() };
 
       const { count, rows } = await LichKham.findAndCountAll({
         where,
@@ -47,7 +50,7 @@ const LichKhamController = {
           },
           { model: ChuyenKhoa, attributes: ['ChuyenKhoaId', 'TenChuyenKhoa'] }
         ],
-        order: [['ThoiGianBatDau', 'DESC']]
+        order: [['ThoiGianBatDau', 'ASC']]
       });
 
       res.status(200).json({
@@ -215,6 +218,25 @@ const LichKhamController = {
         }
       }
 
+      // Check if patient has an active appointment at the same time (exclude cancelled/completed)
+      const thoiGianBD = new Date(ThoiGianBatDau);
+      const existingAppointment = await LichKham.findOne({
+        where: {
+          BenhNhanId: BenhNhanId,
+          ThoiGianBatDau: thoiGianBD,
+          TrangThai: {
+            [Op.notIn]: ['DaHuy', 'DaKham']
+          }
+        }
+      });
+
+      if (existingAppointment) {
+        return res.status(409).json({
+          success: false,
+          message: 'Bệnh nhân này đã có lịch khám vào thời điểm đó. Vui lòng chọn thời gian khác.'
+        });
+      }
+
       // Generate appointment code
       const maLichKham = await generateMaLichKham();
 
@@ -285,6 +307,7 @@ const LichKhamController = {
     } catch (error) {
       console.error('Create appointment error:', error);
       if (error.name === 'SequelizeUniqueConstraintError') {
+        // This should rarely happen now that we check beforehand
         return res.status(409).json({
           success: false,
           message: 'Bệnh nhân này đã có lịch khám vào thời điểm đó. Vui lòng chọn thời gian khác.'

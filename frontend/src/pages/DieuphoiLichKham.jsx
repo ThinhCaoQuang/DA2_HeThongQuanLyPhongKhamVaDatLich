@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import apiClient from '../services/api'
 import '../styles/list.css'
 
@@ -11,9 +12,13 @@ export default function DieuphoiLichKham() {
     new Date().toISOString().split('T')[0]
   )
   const [bacsiDaChon, setBacSiDaChon] = useState('')
+  const navigate = useNavigate()
 
   useEffect(() => {
     layDanhSachBacSi()
+  }, [])
+
+  useEffect(() => {
     layDanhSachLichLamViec()
   }, [ngayDaChon, bacsiDaChon])
 
@@ -29,7 +34,7 @@ export default function DieuphoiLichKham() {
   const layDanhSachLichLamViec = async () => {
     try {
       setDangTa(true)
-      let url = `/lichlamviec?ngayLamViec=${ngayDaChon}`
+      let url = `/lichlamviec?ngayLamViec=${ngayDaChon}&limit=100`
       if (bacsiDaChon) url += `&bacSiId=${bacsiDaChon}`
       const response = await apiClient.get(url)
       setDanhSachLichLamViec(response.data.data || [])
@@ -42,13 +47,20 @@ export default function DieuphoiLichKham() {
     }
   }
 
-  const layGioTrong = (lichlamviec) => {
-    const gios = []
-    if (lichlamviec.GioBatDau && lichlamviec.GioKetThuc) {
-      // Mô phỏng 30 phút/slot
-      gios.push(`${lichlamviec.GioBatDau}`)
-    }
-    return gios
+  const layTenCaLam = (caLam) => {
+    const map = { Sang: 'Sáng', Chieu: 'Chiều', Toi: 'Tối' }
+    return map[caLam] || caLam
+  }
+
+  const xulyTaoLichKham = (llv) => {
+    navigate('/lichkham', {
+      state: {
+        prefill: {
+          bacSiId: llv.BacSiId,
+          thoiGianBatDau: `${ngayDaChon}T${llv.GioBatDau || '07:00'}`,
+        }
+      }
+    })
   }
 
   if (dangta) return <div className="loading">Đang tải...</div>
@@ -61,7 +73,7 @@ export default function DieuphoiLichKham() {
 
       {loi && <div className="alert alert-danger">{loi}</div>}
 
-      <div className="card" style={{ marginBottom: '30px' }}>
+      <div className="card" style={{ marginBottom: '24px' }}>
         <div className="card-header">
           <h3>Bộ Lọc</h3>
         </div>
@@ -99,35 +111,55 @@ export default function DieuphoiLichKham() {
             <tr>
               <th>Bác Sĩ</th>
               <th>Ngày</th>
+              <th>Ca Làm</th>
               <th>Giờ Làm Việc</th>
+              <th>Đã Đặt / Tối Đa</th>
+              <th>Chỗ Còn Lại</th>
               <th>Trạng Thái</th>
-              <th>Giờ Trống</th>
+              <th>Thao Tác</th>
             </tr>
           </thead>
           <tbody>
             {danhsachlichlamviec.length > 0 ? (
-              danhsachlichlamviec.map((lichlamviec) => (
-                <tr key={lichlamviec.LichLamViecId}>
-                  <td>{lichlamviec.BacSi?.NguoiDung?.HoTen || '-'}</td>
-                  <td>{new Date(lichlamviec.NgayLamViec).toLocaleDateString('vi-VN')}</td>
-                  <td>{`${lichlamviec.GioBatDau} - ${lichlamviec.GioKetThuc}`}</td>
-                  <td>
-                    <span className="badge badge-success">{lichlamviec.TrangThai}</span>
-                  </td>
-                  <td>
-                    {layGioTrong(lichlamviec)
-                      .map((gio) => (
-                        <span key={gio} className="badge badge-info" style={{ marginRight: '5px' }}>
-                          {gio}
-                        </span>
-                      ))}
-                  </td>
-                </tr>
-              ))
+              danhsachlichlamviec.map((llv) => {
+                const conLai = llv.soChoConLai ?? (llv.SoBenhNhanToiDa || 10)
+                const daDat   = llv.soLichDaDat ?? 0
+                const toiDa   = llv.SoBenhNhanToiDa || 10
+                const hetCho  = conLai === 0 || llv.TrangThai === 'Huy'
+                return (
+                  <tr key={llv.LichLamViecId}>
+                    <td><strong>{llv.BacSi?.NguoiDung?.HoTen || '-'}</strong></td>
+                    <td>{new Date(llv.NgayLamViec).toLocaleDateString('vi-VN')}</td>
+                    <td>{layTenCaLam(llv.CaLam)}</td>
+                    <td>{llv.GioBatDau?.slice(0,5)} – {llv.GioKetThuc?.slice(0,5)}</td>
+                    <td style={{ textAlign: 'center' }}>{daDat} / {toiDa}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className={`badge badge-${hetCho ? 'danger' : conLai <= 2 ? 'warning' : 'success'}`}>
+                        {hetCho ? 'Hết chỗ' : `${conLai} chỗ`}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`badge badge-${llv.TrangThai === 'HoatDong' ? 'success' : 'danger'}`}>
+                        {llv.TrangThai === 'HoatDong' ? 'Hoạt động' : 'Đã hủy'}
+                      </span>
+                    </td>
+                    <td>
+                      {!hetCho && (
+                        <button
+                          className="btn-small btn-primary"
+                          onClick={() => xulyTaoLichKham(llv)}
+                        >
+                          Đặt Lịch
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })
             ) : (
               <tr>
-                <td colSpan="5" className="text-center">
-                  Không có lịch làm việc khả dụng
+                <td colSpan="8" className="text-center">
+                  Không có lịch làm việc khả dụng cho ngày này
                 </td>
               </tr>
             )}

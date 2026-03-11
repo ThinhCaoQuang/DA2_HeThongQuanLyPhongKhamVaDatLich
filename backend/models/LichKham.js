@@ -34,7 +34,7 @@ const LichKham = sequelize.define('LichKham', {
   },
   TrieuChung: DataTypes.TEXT,
   TrangThai: {
-    type: DataTypes.ENUM('ChoXacNhan', 'DaXacNhan', 'DaKham', 'DaHuy'),
+    type: DataTypes.ENUM('ChoXacNhan', 'DaXacNhan', 'DangKham', 'DaKham', 'DaHuy'),
     defaultValue: 'ChoXacNhan'
   },
   LyDoHuy: DataTypes.TEXT,

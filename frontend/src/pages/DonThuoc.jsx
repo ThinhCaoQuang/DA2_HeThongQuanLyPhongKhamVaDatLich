@@ -584,7 +584,7 @@ export default function DonThuoc() {
                   <strong>Lần khám:</strong> {dondangxem.LanKham?.MaLanKham} — {dondangxem.LanKham?.HoSoKhamBenh?.BenhNhan?.HoTen}
                 </div>
                 <div className="detail-col">
-                  <strong>Bệnh nhân:</strong> {dondangxem.HoSoKhamBenh?.BenhNhan?.HoTen}
+                  <strong>Bệnh nhân:</strong> {dondangxem.LanKham?.HoSoKhamBenh?.BenhNhan?.HoTen}
                 </div>
               </div>
 

@@ -16,7 +16,6 @@ import HoSoKhamBenh from './pages/HoSoKhamBenh'
 import LichKhamCuaToi from './pages/LichKhamCuaToi'
 import NotFound from './pages/NotFound'
 import LichKhamHomNayLeTan from './pages/LichKhamHomNayLeTan'
-import DieuphoiLichKham from './pages/DieuphoiLichKham'
 import DonThuoc from './pages/DonThuoc'
 import ThongKeKham from './pages/ThongKeKham'
 import LichKhamHomNay from './pages/LichKhamHomNay'
@@ -135,16 +134,6 @@ function AppContent() {
           <ProtectedRoute requiredRoles={['LeTan']}>
             <MainLayout>
               <LichKhamHomNayLeTan />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/schedule-coordination"
-        element={
-          <ProtectedRoute requiredRoles={['LeTan']}>
-            <MainLayout>
-              <DieuphoiLichKham />
             </MainLayout>
           </ProtectedRoute>
         }
