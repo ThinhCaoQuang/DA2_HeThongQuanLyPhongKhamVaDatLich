@@ -17,7 +17,6 @@ import LichKhamCuaToi from './pages/LichKhamCuaToi'
 import NotFound from './pages/NotFound'
 import LichKhamHomNayLeTan from './pages/LichKhamHomNayLeTan'
 import DieuphoiLichKham from './pages/DieuphoiLichKham'
-import ThongKeNhanh from './pages/ThongKeNhanh'
 import DonThuoc from './pages/DonThuoc'
 import ThongKeKham from './pages/ThongKeKham'
 import LichKhamHomNay from './pages/LichKhamHomNay'
@@ -51,7 +50,7 @@ function AppContent() {
       <Route
         path="/patients"
         element={
-          <ProtectedRoute requiredRoles={['LeTan', 'BacSi', 'QuanTri']}>
+          <ProtectedRoute requiredRoles={['LeTan', 'BacSi', 'QuanTri', 'QuanLy']}>
             <MainLayout>
               <BenhNhan />
             </MainLayout>
@@ -61,7 +60,7 @@ function AppContent() {
       <Route
         path="/appointments"
         element={
-          <ProtectedRoute requiredRoles={['LeTan', 'QuanTri']}>
+          <ProtectedRoute requiredRoles={['LeTan', 'QuanTri', 'QuanLy']}>
             <MainLayout>
               <LichKham />
             </MainLayout>
@@ -71,7 +70,7 @@ function AppContent() {
       <Route
         path="/schedules"
         element={
-          <ProtectedRoute requiredRoles={['LeTan', 'BacSi', 'QuanTri']}>
+          <ProtectedRoute requiredRoles={['LeTan', 'BacSi', 'QuanTri', 'QuanLy']}>
             <MainLayout>
               <ThoiGianLamViec />
             </MainLayout>
@@ -81,7 +80,7 @@ function AppContent() {
       <Route
         path="/doctors"
         element={
-          <ProtectedRoute requiredRoles={['LeTan', 'QuanTri']}>
+          <ProtectedRoute requiredRoles={['LeTan', 'QuanTri', 'QuanLy']}>
             <MainLayout>
               <BacSi />
             </MainLayout>
@@ -91,7 +90,7 @@ function AppContent() {
       <Route
         path="/specialties"
         element={
-          <ProtectedRoute requiredRoles={['LeTan', 'QuanTri']}>
+          <ProtectedRoute requiredRoles={['LeTan', 'QuanTri', 'QuanLy']}>
             <MainLayout>
               <ChuyenKhoa />
             </MainLayout>
@@ -113,7 +112,7 @@ function AppContent() {
       <Route
         path="/medical-records"
         element={
-          <ProtectedRoute requiredRoles={['BacSi', 'QuanTri', 'LeTan']}>
+          <ProtectedRoute requiredRoles={['BacSi', 'QuanTri', 'QuanLy', 'LeTan']}>
             <MainLayout>
               <HoSoKhamBenh />
             </MainLayout>
@@ -151,19 +150,9 @@ function AppContent() {
         }
       />
       <Route
-        path="/quick-stats"
-        element={
-          <ProtectedRoute requiredRoles={['LeTan']}>
-            <MainLayout>
-              <ThongKeNhanh />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/prescriptions"
         element={
-          <ProtectedRoute requiredRoles={['BacSi', 'LeTan', 'QuanTri']}>
+          <ProtectedRoute requiredRoles={['BacSi', 'LeTan', 'QuanTri', 'QuanLy']}>
             <MainLayout>
               <DonThuoc />
             </MainLayout>
@@ -183,7 +172,7 @@ function AppContent() {
       <Route
         path="/cancellation-stats"
         element={
-          <ProtectedRoute requiredRoles={['LeTan', 'QuanTri']}>
+          <ProtectedRoute requiredRoles={['QuanTri', 'QuanLy']}>
             <MainLayout>
               <ThongKeHuyLich />
             </MainLayout>

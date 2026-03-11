@@ -284,6 +284,12 @@ const LichKhamController = {
       });
     } catch (error) {
       console.error('Create appointment error:', error);
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        return res.status(409).json({
+          success: false,
+          message: 'Bệnh nhân này đã có lịch khám vào thời điểm đó. Vui lòng chọn thời gian khác.'
+        });
+      }
       res.status(500).json({
         success: false,
         message: 'Lỗi máy chủ',

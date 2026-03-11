@@ -60,13 +60,21 @@ const DashboardController = {
       // Total prescriptions
       const totalPrescriptions = await DonThuoc.count();
 
+      // Xác định BacSiId nếu user là bác sĩ
+      let bacSiIdFilter = null;
+      if (req.user?.role === 'BacSi') {
+        const bacSi = await BacSi.findOne({ where: { NguoiDungId: req.user.id } });
+        bacSiIdFilter = bacSi?.BacSiId || null;
+      }
+
       // Upcoming appointments (next 5)
+      const upcomingWhere = {
+        ThoiGianBatDau: { [Op.gte]: today }
+      };
+      if (bacSiIdFilter) upcomingWhere.BacSiId = bacSiIdFilter;
+
       const upcomingAppointments = await LichKham.findAll({
-        where: {
-          ThoiGianBatDau: {
-            [Op.gte]: today
-          }
-        },
+        where: upcomingWhere,
         include: [
           {
             model: BenhNhan,
@@ -87,22 +95,20 @@ const DashboardController = {
         limit: 5
       });
 
-      // Recent medical records
+      // Recent medical records (BacSi now lives in LanKham, not HoSoKhamBenh)
+      const { LanKham } = require('../models');
       const recentMedicalRecords = await HoSoKhamBenh.findAll({
         include: [
+          { model: BenhNhan, attributes: ['BenhNhanId', 'HoTen'] },
           {
-            model: BenhNhan,
-            attributes: ['BenhNhanId', 'HoTen']
-          },
-          {
-            model: BacSi,
-            attributes: ['BacSiId'],
+            model: LanKham,
+            separate: true,
+            required: false,
+            where: bacSiIdFilter ? { BacSiId: bacSiIdFilter } : undefined,
             include: [
-              {
-                model: NguoiDung,
-                attributes: ['HoTen']
-              }
-            ]
+              { model: BacSi, attributes: ['BacSiId'], include: [{ model: NguoiDung, attributes: ['HoTen'] }] }
+            ],
+            order: [['NgayKham', 'DESC']]
           }
         ],
         order: [['CreatedAt', 'DESC']],

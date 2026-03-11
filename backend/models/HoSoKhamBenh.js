@@ -12,33 +12,14 @@ const HoSoKhamBenh = sequelize.define('HoSoKhamBenh', {
     unique: true,
     allowNull: false
   },
-  LichKhamId: {
-    type: DataTypes.INTEGER,
-    unique: true,
-    allowNull: false
-  },
   BenhNhanId: {
     type: DataTypes.INTEGER,
+    unique: true,   // 1 hồ sơ per bệnh nhân
     allowNull: false
   },
-  BacSiId: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  TrieuChung: {
+  GhiChu: {
     type: DataTypes.TEXT,
-    allowNull: false
-  },
-  ChanDoan: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  },
-  KeHoachDieuTri: DataTypes.TEXT,
-  KetLuan: DataTypes.TEXT,
-  GhiChu: DataTypes.TEXT,
-  NgayKham: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+    allowNull: true
   },
   CreatedAt: {
     type: DataTypes.DATE,
@@ -54,3 +35,4 @@ const HoSoKhamBenh = sequelize.define('HoSoKhamBenh', {
 });
 
 module.exports = HoSoKhamBenh;
+

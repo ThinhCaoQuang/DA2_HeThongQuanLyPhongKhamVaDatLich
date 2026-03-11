@@ -1,14 +1,17 @@
 import { useState, useEffect, useContext } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import apiClient from '../services/api'
 import { ToastContext } from '../context/ToastContext'
 import { AuthContext } from '../context/AuthContext'
 import '../styles/list.css'
 
 export default function DonThuoc() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const { success, error: showError } = useContext(ToastContext)
   const { user } = useContext(AuthContext)
   const [danhsachdonthuoc, setDanhSachDonThuoc] = useState([])
-  const [danhsachboso, setDanhSachBoSo] = useState([])
+  const [danhsachlankham, setDanhSachLanKham] = useState([])
   const [dangta, setDangTa] = useState(true)
   const [dangguichitieuthucdung, setDangGuiChiTieuThuCDung] = useState(false)
   const [moform, setMoForm] = useState(false)
@@ -16,30 +19,42 @@ export default function DonThuoc() {
   const [dondangxem, setDonDangXem] = useState(null)
   const [idchinh, setIdChinh] = useState(null)
   const [dulieuform, setDuLieuForm] = useState({
-    hoSoId: '',
+    lanKhamId: '',
     chiTiet: [{ tenThuoc: '', lieuLuong: '', soLuong: '', donVi: '', huongDanSuDung: '', thoiGianDung: '' }],
     ghiChu: '',
   })
   const [loisuform, setLoiSuForm] = useState({})
-  const [locTaiHoSoId, setLocTaiHoSoId] = useState('')
+  const [locTaiLanKhamId, setLocTaiLanKhamId] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [tuLuongHoSo, setTuLuongHoSo] = useState(false)
 
-  const coTheTao = user?.role === 'BacSi' || user?.role === 'QuanTri'
-  const coTheXem = user?.role === 'BacSi' || user?.role === 'QuanTri' || user?.role === 'LeTan'
+  const coTheTao = user?.role === 'BacSi' || user?.role === 'QuanTri' || user?.role === 'QuanLy'
+  const coTheXem = user?.role === 'BacSi' || user?.role === 'QuanTri' || user?.role === 'QuanLy' || user?.role === 'LeTan'
 
   useEffect(() => {
     laydulieu()
   }, [])
 
+  useEffect(() => {
+    if (location.state?.lanKhamId) {
+      setDuLieuForm(prev => ({ ...prev, lanKhamId: location.state.lanKhamId.toString() }))
+      setMoForm(true)
+      if (location.state?.fromWorkflow) {
+        setTuLuongHoSo(true)
+      }
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state?.lanKhamId])
+
   const laydulieu = async () => {
     try {
       setDangTa(true)
-      const [donthuocRes, bosoRes] = await Promise.all([
+      const [donthuocRes, lankhamRes] = await Promise.all([
         apiClient.get('/donthuoc?limit=1000'),
-        apiClient.get('/hosokhambenh?limit=1000'),
+        apiClient.get('/lankham?limit=1000'),
       ])
       setDanhSachDonThuoc(donthuocRes.data.data || [])
-      setDanhSachBoSo(bosoRes.data.data || [])
+      setDanhSachLanKham(lankhamRes.data.data || [])
     } catch (err) {
       showError('Không thể tải dữ liệu')
       console.error(err)
@@ -50,7 +65,7 @@ export default function DonThuoc() {
 
   const kiemTraForm = (data) => {
     const errors = {}
-    if (!data.hoSoId) errors.hoSoId = 'Hồ sơ khám bệnh không được để trống'
+    if (!data.lanKhamId) errors.lanKhamId = 'Lần khám không được để trống'
     if (!data.chiTiet || data.chiTiet.length === 0) {
       errors.chiTiet = 'Phải có ít nhất một loại thuốc'
     } else {
@@ -75,7 +90,7 @@ export default function DonThuoc() {
       setDangGuiChiTieuThuCDung(true)
 
       const payload = {
-        hoSoId: parseInt(dulieuform.hoSoId),
+        lanKhamId: parseInt(dulieuform.lanKhamId),
         chiTiet: dulieuform.chiTiet.map(item => ({
           tenThuoc: item.tenThuoc,
           lieuLuong: item.lieuLuong || null,
@@ -90,20 +105,34 @@ export default function DonThuoc() {
       if (idchinh) {
         await apiClient.put(`/donthuoc/${idchinh}`, payload)
         success('Cập nhật đơn thuốc thành công')
+        setDuLieuForm({
+          lanKhamId: '',
+          chiTiet: [{ tenThuoc: '', lieuLuong: '', soLuong: '', donVi: '', huongDanSuDung: '', thoiGianDung: '' }],
+          ghiChu: '',
+        })
+        setLoiSuForm({})
+        setIdChinh(null)
+        setMoForm(false)
+        laydulieu()
       } else {
         await apiClient.post('/donthuoc', payload)
         success('Tạo đơn thuốc thành công')
+        setDuLieuForm({
+          lanKhamId: '',
+          chiTiet: [{ tenThuoc: '', lieuLuong: '', soLuong: '', donVi: '', huongDanSuDung: '', thoiGianDung: '' }],
+          ghiChu: '',
+        })
+        setLoiSuForm({})
+        setIdChinh(null)
+        setMoForm(false)
+        setTuLuongHoSo(false)
+        // Nếu xuất phát từ luồng hồ sơ → quay lại Lịch Khám Của Tôi
+        if (tuLuongHoSo) {
+          navigate('/my-appointments')
+        } else {
+          laydulieu()
+        }
       }
-
-      setDuLieuForm({
-        hoSoId: '',
-        chiTiet: [{ tenThuoc: '', lieuLuong: '', soLuong: '', donVi: '', huongDanSuDung: '', thoiGianDung: '' }],
-        ghiChu: '',
-      })
-      setLoiSuForm({})
-      setIdChinh(null)
-      setMoForm(false)
-      laydulieu()
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Lỗi khi lưu đơn thuốc'
       showError(errorMessage)
@@ -114,7 +143,7 @@ export default function DonThuoc() {
 
   const xulyChinhsua = (record) => {
     setDuLieuForm({
-      hoSoId: record.HoSoId || '',
+      lanKhamId: record.LanKhamId || '',
       chiTiet: record.DonThuocChiTiets && record.DonThuocChiTiets.length > 0
         ? record.DonThuocChiTiets.map(ct => ({
             tenThuoc: ct.TenThuoc,
@@ -163,10 +192,10 @@ export default function DonThuoc() {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
 
-      hienThongBao('Xuất PDF thành công!', 'success')
+      success('Xuất PDF thành công!')
     } catch (error) {
       console.error('Lỗi xuất PDF:', error)
-      hienThongBao('Có lỗi khi xuất PDF', 'error')
+      showError('Có lỗi khi xuất PDF')
     }
   }
 
@@ -174,7 +203,7 @@ export default function DonThuoc() {
     setMoForm(false)
     setIdChinh(null)
     setDuLieuForm({
-      hoSoId: '',
+      lanKhamId: '',
       chiTiet: [{ tenThuoc: '', lieuLuong: '', soLuong: '', donVi: '', huongDanSuDung: '', thoiGianDung: '' }],
       ghiChu: '',
     })
@@ -194,10 +223,11 @@ export default function DonThuoc() {
     }
   }
 
-  const layThongTinBoSo = (id) => {
-    const boso = danhsachboso.find(r => r.HoSoId === id)
-    if (boso) {
-      return `${boso.MaHoSo} - ${boso.BenhNhan?.HoTen || 'N/A'}`
+  const layThongTinLanKham = (id) => {
+    const lk = danhsachlankham.find(r => r.LanKhamId === id)
+    if (lk) {
+      const tenBenhNhan = lk.HoSoKhamBenh?.BenhNhan?.HoTen || 'N/A'
+      return `${lk.MaLanKham} - ${tenBenhNhan}`
     }
     return `#${id}`
   }
@@ -227,14 +257,14 @@ export default function DonThuoc() {
 
   const donthuocDaLoc = danhsachdonthuoc.filter(p => {
     // Lọc theo hồ sơ
-    if (locTaiHoSoId && p.HoSoId !== parseInt(locTaiHoSoId)) return false
+    if (locTaiLanKhamId && p.LanKhamId !== parseInt(locTaiLanKhamId)) return false
     
     // Lọc theo từ khóa tìm kiếm
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
-      const benhNhanName = p.HoSoKhamBenh?.LichKham?.BenhNhan?.HoTen?.toLowerCase() || ''
-      const maBenhNhan = p.HoSoKhamBenh?.LichKham?.BenhNhan?.MaBenhNhan?.toLowerCase() || ''
-      const tenThuoc = p.ChiTiet?.map(ct => ct.TenThuoc).join(' ').toLowerCase() || ''
+      const benhNhanName = p.LanKham?.HoSoKhamBenh?.BenhNhan?.HoTen?.toLowerCase() || ''
+      const maBenhNhan = p.LanKham?.HoSoKhamBenh?.BenhNhan?.MaBenhNhan?.toLowerCase() || ''
+      const tenThuoc = p.DonThuocChiTiets?.map(ct => ct.TenThuoc).join(' ').toLowerCase() || ''
       
       return benhNhanName.includes(term) || maBenhNhan.includes(term) || tenThuoc.includes(term)
     }
@@ -251,11 +281,11 @@ export default function DonThuoc() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', gap: '2rem' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--text-dark)' }}>
-            Lọc theo hồ sơ:
+            Lọc theo lần khám:
           </label>
           <select
-            value={locTaiHoSoId}
-            onChange={(e) => setLocTaiHoSoId(e.target.value)}
+            value={locTaiLanKhamId}
+            onChange={(e) => setLocTaiLanKhamId(e.target.value)}
             style={{
               width: '100%',
               padding: '0.7rem',
@@ -267,10 +297,10 @@ export default function DonThuoc() {
               transition: 'all 0.3s ease'
             }}
           >
-            <option value="">Tất cả hồ sơ</option>
-            {danhsachboso.map(r => (
-              <option key={r.HoSoId} value={r.HoSoId}>
-                {r.MaHoSo} - {r.BenhNhan?.HoTen}
+            <option value="">Tất cả lần khám</option>
+            {danhsachlankham.map(lk => (
+              <option key={lk.LanKhamId} value={lk.LanKhamId}>
+                {lk.MaLanKham} - {lk.HoSoKhamBenh?.BenhNhan?.HoTen}
               </option>
             ))}
           </select>
@@ -344,21 +374,21 @@ export default function DonThuoc() {
           <form onSubmit={xulyGuiForm}>
             <div className="form-row">
               <div className="form-group">
-                <label>Hồ sơ khám bệnh *</label>
+                <label>Lần khám *</label>
                 <select
-                  value={dulieuform.hoSoId}
-                  onChange={(e) => setDuLieuForm({ ...dulieuform, hoSoId: e.target.value })}
-                  className={loisuform.hoSoId ? 'input-error' : ''}
+                  value={dulieuform.lanKhamId}
+                  onChange={(e) => setDuLieuForm({ ...dulieuform, lanKhamId: e.target.value })}
+                  className={loisuform.lanKhamId ? 'input-error' : ''}
                   disabled={!!idchinh}
                 >
-                  <option value="">-- Chọn hồ sơ khám --</option>
-                  {danhsachboso.map(r => (
-                    <option key={r.HoSoId} value={r.HoSoId}>
-                      {r.MaHoSo} - {r.BenhNhan?.HoTen}
+                  <option value="">-- Chọn lần khám --</option>
+                  {danhsachlankham.map(lk => (
+                    <option key={lk.LanKhamId} value={lk.LanKhamId}>
+                      {lk.MaLanKham} - {lk.HoSoKhamBenh?.BenhNhan?.HoTen}
                     </option>
                   ))}
                 </select>
-                {loisuform.hoSoId && <span className="error">{loisuform.hoSoId}</span>}
+                {loisuform.lanKhamId && <span className="error">{loisuform.lanKhamId}</span>}
               </div>
             </div>
 
@@ -489,7 +519,7 @@ export default function DonThuoc() {
               donthuocDaLoc.map((donthuoc) => (
                 <tr key={donthuoc.DonThuocId}>
                   <td>{donthuoc.MaDonThuoc}</td>
-                  <td>{layThongTinBoSo(donthuoc.HoSoId)}</td>
+                  <td>{layThongTinLanKham(donthuoc.LanKhamId)}</td>
                   <td>{donthuoc.DonThuocChiTiets?.length || 0}</td>
                   <td>{new Date(donthuoc.CreatedAt).toLocaleDateString('vi-VN')}</td>
                   <td>
@@ -551,7 +581,7 @@ export default function DonThuoc() {
 
               <div className="detail-row">
                 <div className="detail-col">
-                  <strong>Hồ sơ:</strong> {dondangxem.HoSoKhamBenh?.MaHoSo}
+                  <strong>Lần khám:</strong> {dondangxem.LanKham?.MaLanKham} — {dondangxem.LanKham?.HoSoKhamBenh?.BenhNhan?.HoTen}
                 </div>
                 <div className="detail-col">
                   <strong>Bệnh nhân:</strong> {dondangxem.HoSoKhamBenh?.BenhNhan?.HoTen}

@@ -19,8 +19,6 @@ export default function Sidebar() {
     if (userRole === 'LeTan') {
       return [
         ...commonItems,
-        { path: '/quick-stats', label: 'Thống Kê Nhanh' },
-        { path: '/cancellation-stats', label: 'Thống Kê Hủy Lịch' },
         { path: '/today-appointments', label: 'Lịch Khám Hôm Nay' },
         { path: '/schedule-coordination', label: 'Điều Phối Lịch' },
         { path: '/patients', label: 'Bệnh Nhân' },
@@ -34,8 +32,8 @@ export default function Sidebar() {
     } else if (userRole === 'BacSi') {
       return [
         ...commonItems,
-        { path: '/doctor-stats', label: 'Thống Kê Khám' },
-        { path: '/doctor-today-appointments', label: 'Khám Hôm Nay' },
+        { path: '/thong-ke-kham', label: 'Thống Kê Khám' },
+        { path: '/lich-kham-hom-nay', label: 'Khám Hôm Nay' },
         { path: '/prescriptions', label: 'Đơn Thuốc' },
         { path: '/patients', label: 'Danh Sách Bệnh Nhân' },
         { path: '/schedules', label: 'Lịch Làm Việc' },
@@ -53,6 +51,17 @@ export default function Sidebar() {
         { path: '/schedules', label: 'Lịch Làm Việc' },
         { path: '/medical-records', label: 'Hồ Sơ Khám Bệnh' },
         { path: '/users', label: 'Quản Lý Người Dùng' },
+      ]
+    } else if (userRole === 'QuanLy') {
+      return [
+        ...commonItems,
+        { path: '/cancellation-stats', label: 'Thống Kê Hủy Lịch' },
+        { path: '/patients', label: 'Bệnh Nhân' },
+        { path: '/doctors', label: 'Bác Sĩ' },
+        { path: '/specialties', label: 'Chuyên Khoa' },
+        { path: '/appointments', label: 'Lịch Khám' },
+        { path: '/schedules', label: 'Lịch Làm Việc' },
+        { path: '/medical-records', label: 'Hồ Sơ Khám Bệnh' },
       ]
     }
 

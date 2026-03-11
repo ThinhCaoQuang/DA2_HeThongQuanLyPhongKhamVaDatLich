@@ -7,19 +7,19 @@ const router = express.Router();
 // All routes require authentication
 router.use(AuthMiddleware.verifyToken);
 
-// CRUD operations (LeTan, QuanTri, BacSi can read)
-router.get('/', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'BacSi']), LichKhamController.getAll);
-router.get('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'BacSi']), LichKhamController.getById);
-router.post('/', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.create);
-router.put('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.update);
-router.delete('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.delete);
+// Export (must be before /:id to avoid route conflict)
+router.get('/export/excel', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy']), LichKhamController.exportToExcel);
+
+// CRUD operations
+router.get('/', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy', 'BacSi']), LichKhamController.getAll);
+router.get('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy', 'BacSi']), LichKhamController.getById);
+router.post('/', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy']), LichKhamController.create);
+router.put('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy']), LichKhamController.update);
+router.delete('/:id', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy']), LichKhamController.delete);
 
 // Special operations
-router.post('/:id/confirm', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.confirmAppointment);
-router.post('/:id/cancel', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.cancelAppointment);
+router.post('/:id/confirm', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy']), LichKhamController.confirmAppointment);
+router.post('/:id/cancel', AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy']), LichKhamController.cancelAppointment);
 router.post('/:id/complete', AuthMiddleware.checkRole(['BacSi']), LichKhamController.completeAppointment);
-
-// Export
-router.get('/export/excel', AuthMiddleware.checkRole(['LeTan', 'QuanTri']), LichKhamController.exportToExcel);
 
 module.exports = router;

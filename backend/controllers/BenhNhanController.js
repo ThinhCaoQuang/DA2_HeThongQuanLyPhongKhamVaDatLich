@@ -1,4 +1,4 @@
-const { BenhNhan, LichKham, ChuyenKhoa, BacSi } = require('../models');
+const { BenhNhan, LichKham, ChuyenKhoa, BacSi, LanKham, HoSoKhamBenh } = require('../models');
 const { Op } = require('sequelize');
 
 // Generate patient code
@@ -26,6 +26,19 @@ const BenhNhanController = {
           { Email: { [Op.like]: `%${search}%` } },
           { MaBenhNhan: { [Op.like]: `%${search}%` } }
         ];
+      }
+
+      // BacSi role: only show patients they have examined
+      if (req.user.role === 'BacSi' && req.user.BacSiId) {
+        const examinedRecords = await LanKham.findAll({
+          where: { BacSiId: req.user.BacSiId },
+          include: [{ model: HoSoKhamBenh, attributes: ['BenhNhanId'] }],
+          attributes: []
+        });
+        const benhNhanIds = [...new Set(
+          examinedRecords.map(lk => lk.HoSoKhamBenh?.BenhNhanId).filter(Boolean)
+        )];
+        where.BenhNhanId = { [Op.in]: benhNhanIds.length > 0 ? benhNhanIds : [0] };
       }
 
       const { count, rows } = await BenhNhan.findAndCountAll({
@@ -59,6 +72,25 @@ const BenhNhanController = {
   getById: async (req, res) => {
     try {
       const { id } = req.params;
+
+      // BacSi role: only view patient if they have examined them
+      if (req.user.role === 'BacSi' && req.user.BacSiId) {
+        const examined = await LanKham.findOne({
+          where: { BacSiId: req.user.BacSiId },
+          include: [{
+            model: HoSoKhamBenh,
+            where: { BenhNhanId: id },
+            attributes: []
+          }],
+          attributes: ['LanKhamId']
+        });
+        if (!examined) {
+          return res.status(403).json({
+            success: false,
+            message: 'Bạn không có quyền xem thông tin bệnh nhân này'
+          });
+        }
+      }
 
       const patient = await BenhNhan.findOne({
         where: { BenhNhanId: id },
