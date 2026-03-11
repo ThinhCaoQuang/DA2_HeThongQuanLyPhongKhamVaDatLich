@@ -120,19 +120,19 @@ export default function Dashboard() {
         <div className="dashboard-section">
           <div className="section-header">
             <h2>Hồ Sơ Khám Gần Đây</h2>
-            <span className="count">{recentMedicalRecords.length}</span>
+            <span className="count">{recentMedicalRecords.filter(r => r.LanKhams?.[0]?.BacSi?.NguoiDung?.HoTen).length}</span>
           </div>
 
-          {recentMedicalRecords.length > 0 ? (
+          {recentMedicalRecords.filter(r => r.LanKhams?.[0]?.BacSi?.NguoiDung?.HoTen).length > 0 ? (
             <div className="records-list">
-              {recentMedicalRecords.map((record, idx) => (
+              {recentMedicalRecords.filter(r => r.LanKhams?.[0]?.BacSi?.NguoiDung?.HoTen).map((record, idx) => (
                 <div key={idx} className="record-item">
                   <div className="record-info">
                     <div className="record-patient">
                       <strong>{record.BenhNhan?.HoTen || 'N/A'}</strong>
                     </div>
                     <div className="record-doctor">
-                      Bác sĩ: {record.BacSi?.NguoiDung?.HoTen || 'N/A'}
+                      Bác sĩ: {record.LanKhams?.[0]?.BacSi?.NguoiDung?.HoTen || 'N/A'}
                     </div>
                     <div className="record-date">
                       {new Date(record.CreatedAt).toLocaleDateString('vi-VN', {

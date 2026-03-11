@@ -326,16 +326,18 @@ export default function ThoiGianLamViec() {
     <div className="list-page">
       <div className="page-header">
         <h1>Lịch Làm Việc Bác Sĩ</h1>
-        <button
-          className="btn-primary"
-          onClick={() => {
-            setMoForm(true)
-            setLoiSuForm({})
-          }}
-          disabled={moform}
-        >
-          Thêm lịch làm việc
-        </button>
+        {nguoidunghientai?.VaiTro !== 'LeTan' && (
+          <button
+            className="btn-primary"
+            onClick={() => {
+              setMoForm(true)
+              setLoiSuForm({})
+            }}
+            disabled={moform}
+          >
+            Thêm lịch làm việc
+          </button>
+        )}
       </div>
 
       {moform && (
@@ -566,7 +568,7 @@ export default function ThoiGianLamViec() {
               <th>Giờ</th>
               <th>Bệnh nhân tối đa</th>
               <th>Trạng Thái</th>
-              <th>Hành Động</th>
+              {nguoidunghientai?.VaiTro !== 'LeTan' && <th>Hành Động</th>}
             </tr>
           </thead>
           <tbody>
@@ -590,24 +592,26 @@ export default function ThoiGianLamViec() {
                       {layNhanTrangThai(lichlamviec.TrangThai)}
                     </span>
                   </td>
-                  <td>
-                    <button
-                      className="btn-edit btn-success"
-                      onClick={() => xulyChinhsua(lichlamviec)}
-                      disabled={moform || !coTheChinhsua(lichlamviec)}
-                      title={!coTheChinhsua(lichlamviec) ? 'Bạn không có quyền sửa lịch làm việc của đồng nghiệp' : 'Cập nhật'}
-                    >
-                      Cập nhật
-                    </button>
-                    <button
-                      className="btn-delete"
-                      onClick={() => xulyXoa(lichlamviec.LichLamViecId)}
-                      disabled={moform || !coTheXoa(lichlamviec)}
-                      title={!coTheXoa(lichlamviec) ? 'Bạn không có quyền xóa lịch làm việc của đồng nghiệp' : 'Xóa'}
-                    >
-                      Xóa
-                    </button>
-                  </td>
+                  {nguoidunghientai?.VaiTro !== 'LeTan' && (
+                    <td>
+                      <button
+                        className="btn-edit btn-success"
+                        onClick={() => xulyChinhsua(lichlamviec)}
+                        disabled={moform || !coTheChinhsua(lichlamviec)}
+                        title={!coTheChinhsua(lichlamviec) ? 'Bạn không có quyền sửa lịch làm việc của đồng nghiệp' : 'Cập nhật'}
+                      >
+                        Cập nhật
+                      </button>
+                      <button
+                        className="btn-delete"
+                        onClick={() => xulyXoa(lichlamviec.LichLamViecId)}
+                        disabled={moform || !coTheXoa(lichlamviec)}
+                        title={!coTheXoa(lichlamviec) ? 'Bạn không có quyền xóa lịch làm việc của đồng nghiệp' : 'Xóa'}
+                      >
+                        Xóa
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

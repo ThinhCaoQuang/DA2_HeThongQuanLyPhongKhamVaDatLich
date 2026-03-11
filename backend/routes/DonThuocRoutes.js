@@ -12,11 +12,11 @@ router.get('/', DonThuocController.getAll);
 router.get('/:id', DonThuocController.getById);
 
 // Create/Update/Delete (BacSi, LeTan, QuanTri only)
-router.post('/', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), DonThuocController.create);
-router.put('/:id', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), DonThuocController.update);
-router.delete('/:id', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), DonThuocController.delete);
+router.post('/', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri', 'QuanLy']), DonThuocController.create);
+router.put('/:id', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri', 'QuanLy']), DonThuocController.update);
+router.delete('/:id', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri', 'QuanLy']), DonThuocController.delete);
 
 // Export
-router.get('/:id/export/pdf', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri']), DonThuocController.exportToPDF);
+router.get('/:id/export/pdf', AuthMiddleware.checkRole(['BacSi', 'LeTan', 'QuanTri', 'QuanLy']), DonThuocController.exportToPDF);
 
 module.exports = router;

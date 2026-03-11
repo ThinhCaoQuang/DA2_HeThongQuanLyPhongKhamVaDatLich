@@ -22,7 +22,7 @@ const TaiKhoan = sequelize.define('TaiKhoan', {
     allowNull: false
   },
   VaiTro: {
-    type: DataTypes.ENUM('QuanTri', 'LeTan', 'BacSi'),
+    type: DataTypes.ENUM('QuanTri', 'QuanLy', 'LeTan', 'BacSi'),
     allowNull: false
   },
   TrangThai: {

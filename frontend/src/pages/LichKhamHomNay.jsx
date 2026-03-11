@@ -7,6 +7,7 @@ const getTrangThaiLabel = (trangThai) => {
   const labels = {
     'ChoXacNhan': 'Chờ xác nhận',
     'DaXacNhan': 'Đã xác nhận',
+    'DangKham': 'Đang khám',
     'DaKham': 'Đã khám',
     'DaHuy': 'Đã hủy',
   }
@@ -37,6 +38,16 @@ export default function LichKhamHomNay() {
       console.error(err)
     } finally {
       setDangTa(false)
+    }
+  }
+
+  const xacNhanLichKham = async (lichkhamId) => {
+    try {
+      await apiClient.post(`/lichkham/${lichkhamId}/confirm`)
+      await layLichKhamHomNay()
+    } catch (err) {
+      setLoi('Không thể xác nhận lịch khám')
+      console.error(err)
     }
   }
 
@@ -99,13 +110,26 @@ export default function LichKhamHomNay() {
                   <td>{lichkham.BenhNhan?.HoTen || '-'}</td>
                   <td>{lichkham.TrieuChung || '-'}</td>
                   <td>
-                    <span className={`badge badge-${lichkham.TrangThai === 'ChoXacNhan' ? 'warning' : 'success'}`}>
+                    <span className={`badge badge-${
+                      lichkham.TrangThai === 'ChoXacNhan' ? 'warning' :
+                      lichkham.TrangThai === 'DangKham' ? 'info' :
+                      lichkham.TrangThai === 'DaKham' ? 'success' :
+                      lichkham.TrangThai === 'DaHuy' ? 'danger' : 'secondary'
+                    }`}>
                       {getTrangThaiLabel(lichkham.TrangThai) || '-'}
                     </span>
                   </td>
                   <td className="actions">
                     <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                      {lichkham.TrangThai !== 'DaKham' && (
+                      {lichkham.TrangThai === 'ChoXacNhan' && (
+                        <button
+                          className="btn-small btn-primary"
+                          onClick={() => xacNhanLichKham(lichkham.LichKhamId)}
+                        >
+                          Bắt đầu khám
+                        </button>
+                      )}
+                      {lichkham.TrangThai === 'DangKham' && (
                         <button
                           className="btn-small btn-success"
                           onClick={() => capNhatTrangThai(lichkham.LichKhamId, 'DaKham')}
@@ -113,7 +137,7 @@ export default function LichKhamHomNay() {
                           Hoàn tất
                         </button>
                       )}
-                      {lichkham.TrangThai !== 'DaHuy' && (
+                      {lichkham.TrangThai !== 'DaHuy' && lichkham.TrangThai !== 'DaKham' && (
                         <button
                           className="btn-small btn-danger"
                           onClick={() => capNhatTrangThai(lichkham.LichKhamId, 'DaHuy')}

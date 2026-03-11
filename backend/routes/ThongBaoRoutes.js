@@ -9,23 +9,23 @@ router.use(AuthMiddleware.verifyToken);
 
 // Specific routes must come BEFORE parameter routes (:id)
 // Get unread count
-router.get('/count/unread', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri']), ThongBaoController.getUnreadCount);
+router.get('/count/unread', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri', 'QuanLy']), ThongBaoController.getUnreadCount);
 
 // Mark all notifications as read
-router.put('/read/all', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri']), ThongBaoController.markAllAsRead);
+router.put('/read/all', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri', 'QuanLy']), ThongBaoController.markAllAsRead);
 
 // Get all notifications for logged-in user
-router.get('/', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri']), ThongBaoController.getAll);
+router.get('/', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri', 'QuanLy']), ThongBaoController.getAll);
 
 // Parameter routes come LAST
 // Mark single notification as read
-router.put('/:id/read', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri']), ThongBaoController.markAsRead);
+router.put('/:id/read', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri', 'QuanLy']), ThongBaoController.markAsRead);
 
 // Get notification by ID
-router.get('/:id', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri']), ThongBaoController.getById);
+router.get('/:id', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri', 'QuanLy']), ThongBaoController.getById);
 
 // Delete notification
-router.delete('/:id', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri']), ThongBaoController.delete);
+router.delete('/:id', AuthMiddleware.checkRole(['BenhNhan', 'BacSi', 'LeTan', 'QuanTri', 'QuanLy']), ThongBaoController.delete);
 
 module.exports = router;
 

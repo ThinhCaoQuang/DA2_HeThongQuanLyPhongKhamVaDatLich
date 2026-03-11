@@ -9,7 +9,6 @@ export default function ThongKeKham() {
     tonglichkham: 0,
     hoantatlichkham: 0,
     tongbenhnhan: 0,
-    xephangtrungbinh: 0,
   })
   const [dangta, setDangTa] = useState(true)
   const [loi, setLoi] = useState('')
@@ -38,7 +37,6 @@ export default function ThongKeKham() {
         tonglichkham: lichkhams.length,
         hoantatlichkham: hoantal,
         tongbenhnhan: benhnhanrieng,
-        xephangtrungbinh: 4.5,
       })
       setLoi('')
     } catch (err) {
@@ -88,30 +86,7 @@ export default function ThongKeKham() {
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: '#ffc107' }}>
-            ⋆
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{thoikeshowing.xephangtrungbinh.toFixed(1)}</div>
-            <div className="stat-label">Xếp Hạng Trung Bình</div>
-          </div>
-        </div>
-      </div>
 
-      <div className="info-section" style={{ marginTop: '40px' }}>
-        <div className="card">
-          <div className="card-header">
-            <h2>Hướng Dẫn Nhanh</h2>
-          </div>
-          <div style={{ padding: '20px' }}>
-            <ul>
-              <li>Xem <strong>Lịch Khám Hôm Nay</strong> để theo dõi bệnh nhân cần khám</li>
-              <li>Quản lý <strong>Đơn Thuốc</strong> cho các bệnh nhân</li>
-              <li>Theo dõi thống kê hiệu suất công việc</li>
-            </ul>
-          </div>
-        </div>
       </div>
     </div>
   )

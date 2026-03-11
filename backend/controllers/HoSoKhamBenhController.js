@@ -1,5 +1,4 @@
-const { HoSoKhamBenh, LichKham, BenhNhan, BacSi, NguoiDung } = require('../models');
-const ExportService = require('../services/ExportService');
+const { HoSoKhamBenh, LanKham, LichKham, BenhNhan, BacSi, NguoiDung, DonThuoc, DonThuocChiTiet } = require('../models');
 const { Op } = require('sequelize');
 
 // Generate medical record code
@@ -13,32 +12,35 @@ const generateMaHoSo = async () => {
 };
 
 const HoSoKhamBenhController = {
-  // Get all medical records
+  // Lấy tất cả hồ sơ (1 per bệnh nhân), kèm danh sách lần khám
   getAll: async (req, res) => {
     try {
-      const { page = 1, limit = 10, benhNhanId, bacSiId } = req.query;
+      const { page = 1, limit = 10, benhNhanId } = req.query;
       const offset = (page - 1) * limit;
 
       const where = {};
       if (benhNhanId) where.BenhNhanId = benhNhanId;
-      if (bacSiId) where.BacSiId = bacSiId;
 
       const { count, rows } = await HoSoKhamBenh.findAndCountAll({
         where,
         offset,
         limit: parseInt(limit),
         include: [
-          { model: LichKham, attributes: ['LichKhamId', 'MaLichKham', 'ThoiGianBatDau'] },
-          { model: BenhNhan, attributes: ['BenhNhanId', 'MaBenhNhan', 'HoTen'] },
-          { 
-            model: BacSi, 
-            attributes: ['BacSiId', 'NguoiDungId'],
+          { model: BenhNhan, attributes: ['BenhNhanId', 'MaBenhNhan', 'HoTen', 'NgaySinh', 'GioiTinh', 'DienThoai'] },
+          {
+            model: LanKham,
             include: [
-              { model: NguoiDung, attributes: ['HoTen'] }
+              { model: LichKham, attributes: ['LichKhamId', 'MaLichKham', 'ThoiGianBatDau'] },
+              {
+                model: BacSi,
+                attributes: ['BacSiId', 'NguoiDungId'],
+                include: [{ model: NguoiDung, attributes: ['HoTen'] }]
+              },
+              { model: DonThuoc, include: [{ model: DonThuocChiTiet }] }
             ]
           }
         ],
-        order: [['NgayKham', 'DESC']]
+        order: [['CreatedAt', 'DESC']]
       });
 
       res.status(200).json({
@@ -53,235 +55,120 @@ const HoSoKhamBenhController = {
       });
     } catch (error) {
       console.error('Get all medical records error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ',
-        error: error.message
-      });
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ', error: error.message });
     }
   },
 
-  // Get medical record by ID
+  // Lấy hồ sơ theo ID (kèm toàn bộ lịch sử lần khám)
   getById: async (req, res) => {
     try {
       const { id } = req.params;
-
       const record = await HoSoKhamBenh.findOne({
         where: { HoSoId: id },
         include: [
-          { model: LichKham },
           { model: BenhNhan },
-          { 
-            model: BacSi,
+          {
+            model: LanKham,
             include: [
-              { model: NguoiDung, attributes: ['HoTen'] }
+              { model: LichKham },
+              { model: BacSi, include: [{ model: NguoiDung, attributes: ['HoTen'] }] },
+              { model: DonThuoc, include: [{ model: DonThuocChiTiet }] }
             ]
           }
         ]
       });
 
-      if (!record) {
-        return res.status(404).json({
-          success: false,
-          message: 'Hồ sơ khám bệnh không tìm thấy'
-        });
-      }
-
-      res.status(200).json({
-        success: true,
-        data: record
-      });
+      if (!record) return res.status(404).json({ success: false, message: 'Hồ sơ không tìm thấy' });
+      res.status(200).json({ success: true, data: record });
     } catch (error) {
       console.error('Get medical record error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ',
-        error: error.message
-      });
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ', error: error.message });
     }
   },
 
-  // Create medical record
+  // Tạo hồ sơ mới cho bệnh nhân (1 per bệnh nhân)
   create: async (req, res) => {
     try {
-      const { lichKhamId, trieuChung, chanDoan, keHoachDieuTri, ketLuan, ghiChu } = req.body;
+      const { benhNhanId, ghiChu } = req.body;
 
-      if (!lichKhamId || !chanDoan) {
-        return res.status(400).json({
-          success: false,
-          message: 'Lịch khám và chẩn đoán không được để trống'
-        });
+      if (!benhNhanId) {
+        return res.status(400).json({ success: false, message: 'Bệnh nhân không được để trống' });
       }
 
-      // Check if appointment exists and get benhNhanId, bacSiId from it
-      const appointment = await LichKham.findByPk(lichKhamId);
-      if (!appointment) {
-        return res.status(404).json({
-          success: false,
-          message: 'Lịch khám không tìm thấy'
-        });
-      }
+      const benhNhan = await BenhNhan.findByPk(benhNhanId);
+      if (!benhNhan) return res.status(404).json({ success: false, message: 'Bệnh nhân không tìm thấy' });
 
-      // Check if record already exists for this appointment
-      const existingRecord = await HoSoKhamBenh.findOne({
-        where: { LichKhamId: lichKhamId }
-      });
-
-      if (existingRecord) {
+      const existing = await HoSoKhamBenh.findOne({ where: { BenhNhanId: benhNhanId } });
+      if (existing) {
         return res.status(409).json({
           success: false,
-          message: 'Hồ sơ khám bệnh cho lịch khám này đã tồn tại'
+          message: 'Bệnh nhân này đã có hồ sơ khám bệnh',
+          existingHoSoId: existing.HoSoId
         });
       }
 
-      // Generate record code
       const maHoSo = await generateMaHoSo();
-
-      const record = await HoSoKhamBenh.create({
-        MaHoSo: maHoSo,
-        LichKhamId: lichKhamId,
-        BenhNhanId: appointment.BenhNhanId,
-        BacSiId: appointment.BacSiId,
-        TrieuChung: trieuChung || appointment.TrieuChung,
-        ChanDoan: chanDoan,
-        KeHoachDieuTri: keHoachDieuTri,
-        KetLuan: ketLuan,
-        GhiChu: ghiChu,
-        NgayKham: new Date()
-      });
-
-      res.status(201).json({
-        success: true,
-        message: 'Tạo hồ sơ khám bệnh thành công',
-        data: record
-      });
+      const record = await HoSoKhamBenh.create({ MaHoSo: maHoSo, BenhNhanId: benhNhanId, GhiChu: ghiChu || null });
+      res.status(201).json({ success: true, message: 'Tạo hồ sơ thành công', data: record });
     } catch (error) {
       console.error('Create medical record error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ',
-        error: error.message
-      });
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ', error: error.message });
     }
   },
 
-  // Update medical record
+  // Tìm hoặc tạo hồ sơ cho bệnh nhân (workflow từ LichKhamCuaToi)
+  findOrCreate: async (req, res) => {
+    try {
+      const { benhNhanId } = req.body;
+      if (!benhNhanId) return res.status(400).json({ success: false, message: 'Thiếu benhNhanId' });
+
+      const benhNhan = await BenhNhan.findByPk(benhNhanId);
+      if (!benhNhan) return res.status(404).json({ success: false, message: 'Bệnh nhân không tìm thấy' });
+
+      let hoSo = await HoSoKhamBenh.findOne({ where: { BenhNhanId: benhNhanId } });
+      let created = false;
+
+      if (!hoSo) {
+        const maHoSo = await generateMaHoSo();
+        hoSo = await HoSoKhamBenh.create({ MaHoSo: maHoSo, BenhNhanId: benhNhanId });
+        created = true;
+      }
+
+      res.json({ success: true, created, data: hoSo });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ', error: error.message });
+    }
+  },
+
+  // Cập nhật ghi chú tổng quát hồ sơ
   update: async (req, res) => {
     try {
       const { id } = req.params;
-      const { chanDoan, keHoachDieuTri, ketLuan, ghiChu } = req.body;
+      const { ghiChu } = req.body;
 
       const record = await HoSoKhamBenh.findByPk(id);
+      if (!record) return res.status(404).json({ success: false, message: 'Hồ sơ không tìm thấy' });
 
-      if (!record) {
-        return res.status(404).json({
-          success: false,
-          message: 'Hồ sơ khám bệnh không tìm thấy'
-        });
-      }
-
-      await record.update({
-        ChanDoan: chanDoan || record.ChanDoan,
-        KeHoachDieuTri: keHoachDieuTri !== undefined ? keHoachDieuTri : record.KeHoachDieuTri,
-        KetLuan: ketLuan !== undefined ? ketLuan : record.KetLuan,
-        GhiChu: ghiChu !== undefined ? ghiChu : record.GhiChu,
-        UpdatedAt: new Date()
-      });
-
-      res.status(200).json({
-        success: true,
-        message: 'Cập nhật hồ sơ khám bệnh thành công',
-        data: record
-      });
+      await record.update({ GhiChu: ghiChu !== undefined ? ghiChu : record.GhiChu, UpdatedAt: new Date() });
+      res.status(200).json({ success: true, message: 'Cập nhật hồ sơ thành công', data: record });
     } catch (error) {
       console.error('Update medical record error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ',
-        error: error.message
-      });
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ', error: error.message });
     }
   },
 
-  // Delete medical record
+  // Xóa hồ sơ (cascade xóa tất cả lần khám)
   delete: async (req, res) => {
     try {
       const { id } = req.params;
-
       const record = await HoSoKhamBenh.findByPk(id);
-
-      if (!record) {
-        return res.status(404).json({
-          success: false,
-          message: 'Hồ sơ khám bệnh không tìm thấy'
-        });
-      }
-
+      if (!record) return res.status(404).json({ success: false, message: 'Hồ sơ không tìm thấy' });
       await record.destroy();
-
-      res.status(200).json({
-        success: true,
-        message: 'Xóa hồ sơ khám bệnh thành công'
-      });
+      res.status(200).json({ success: true, message: 'Xóa hồ sơ thành công' });
     } catch (error) {
       console.error('Delete medical record error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Lỗi máy chủ',
-        error: error.message
-      });
-    }
-  },
-
-  // Xuất danh sách hồ sơ khám bệnh ra Excel
-  exportToExcel: async (req, res) => {
-    try {
-      const { benhNhanId, bacSiId, startDate, endDate } = req.query;
-
-      const where = {};
-      if (benhNhanId) where.BenhNhanId = benhNhanId;
-      if (bacSiId) where.BacSiId = bacSiId;
-
-      if (startDate || endDate) {
-        where.CreatedAt = {};
-        if (startDate) where.CreatedAt[Op.gte] = new Date(startDate);
-        if (endDate) {
-          const end = new Date(endDate);
-          end.setHours(23, 59, 59, 999);
-          where.CreatedAt[Op.lte] = end;
-        }
-      }
-
-      const records = await HoSoKhamBenh.findAll({
-        where,
-        include: [
-          { model: LichKham, attributes: ['LichKhamId', 'MaLichKham', 'ThoiGianBatDau'] },
-          { model: BenhNhan, attributes: ['BenhNhanId', 'MaBenhNhan', 'HoTen'] },
-          { 
-            model: BacSi, 
-            attributes: ['BacSiId', 'NguoiDungId'],
-            include: [
-              { model: NguoiDung, attributes: ['HoTen'] }
-            ]
-          }
-        ],
-        order: [['NgayKham', 'ASC']]
-      });
-
-      const buffer = await ExportService.exportMedicalRecordsToExcel(records, { startDate, endDate });
-
-      const filename = `HoSoKhamBenh_${new Date().toISOString().split('T')[0]}.xlsx`;
-      
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.send(buffer);
-    } catch (error) {
-      console.error('Export medical records to Excel error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Lỗi xuất file Excel',
-        error: error.message
-      });
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ', error: error.message });
     }
   }
 };

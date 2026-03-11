@@ -8,6 +8,7 @@ const getTrangThaiLabel = (trangThai) => {
   const labels = {
     'ChoXacNhan': 'Chờ xác nhận',
     'DaXacNhan': 'Đã xác nhận',
+    'DangKham': 'Đang khám',
     'DaKham': 'Đã khám',
     'DaHuy': 'Đã hủy',
   }
@@ -18,6 +19,7 @@ export default function LichKhamCuaToi() {
   const navigate = useNavigate()
   const { user } = useContext(AuthContext)
   const [danhsachlichkham, setDanhSachLichKham] = useState([])
+  const [danhsachlankham, setDanhSachLanKham] = useState([])
   const [dangta, setDangTa] = useState(true)
   const [loi, setLoi] = useState('')
 
@@ -28,8 +30,12 @@ export default function LichKhamCuaToi() {
   const layLichKhamCuaToi = async () => {
     try {
       setDangTa(true)
-      const response = await apiClient.get('/lichkham')
-      setDanhSachLichKham(response.data.data || [])
+      const [lichkhamRes, lankhamRes] = await Promise.all([
+        apiClient.get('/lichkham'),
+        apiClient.get('/lankham'),
+      ])
+      setDanhSachLichKham(lichkhamRes.data.data || [])
+      setDanhSachLanKham(lankhamRes.data.data || [])
     } catch (err) {
       setLoi('Không thể tải lịch khám của bạn')
     } finally {
@@ -55,14 +61,20 @@ export default function LichKhamCuaToi() {
     }
   }
 
-  const xulyTaoHoSo = (lichkhamid) => {
-    navigate('/medical-records', { 
-      state: { lichKhamId: lichkhamid } 
-    })
+  const xulyTaoHoSo = async (lichkham) => {
+    try {
+      const res = await apiClient.post('/hosokhambenh/find-or-create', {
+        benhNhanId: lichkham.BenhNhanId
+      })
+      const hoSoId = res.data.data.HoSoId
+      navigate('/medical-records', { state: { hoSoId, lichKhamId: lichkham.LichKhamId, fromWorkflow: true } })
+    } catch {
+      navigate('/medical-records', { state: { lichKhamId: lichkham.LichKhamId, fromWorkflow: true } })
+    }
   }
 
   const laBacSi = user?.role === 'BacSi'
-  const laLeTanHoacQuanTri = user?.role === 'LeTan' || user?.role === 'QuanTri'
+  const laLeTanHoacQuanTri = user?.role === 'LeTan' || user?.role === 'QuanTri' || user?.role === 'QuanLy'
 
   if (dangta) return <div className="loading">Đang tải...</div>
 
@@ -110,7 +122,7 @@ export default function LichKhamCuaToi() {
                         Xác Nhận
                       </button>
                     )}
-                    {lichkham.TrangThai === 'DaXacNhan' && laBacSi && (
+                    {(lichkham.TrangThai === 'DaXacNhan' || lichkham.TrangThai === 'DangKham') && laBacSi && (
                       <button
                         className="btn-small btn-info"
                         onClick={() =>
@@ -120,14 +132,17 @@ export default function LichKhamCuaToi() {
                         Hoàn Thành
                       </button>
                     )}
-                    {lichkham.TrangThai === 'DaXacNhan' && (laBacSi || laLeTanHoacQuanTri) && (
-                      <button 
-                        className="btn-small btn-primary"
-                        onClick={() => xulyTaoHoSo(lichkham.LichKhamId)}
-                      >
-                        Tạo Hồ Sơ
-                      </button>
-                    )}
+                    {(lichkham.TrangThai === 'DaXacNhan' || lichkham.TrangThai === 'DangKham') && (laBacSi || laLeTanHoacQuanTri) && (() => {
+                      const daCoLanKham = danhsachlankham.some(lk => lk.LichKhamId === lichkham.LichKhamId)
+                      return (
+                        <button
+                          className={`btn-small ${daCoLanKham ? 'btn-warning' : 'btn-primary'}`}
+                          onClick={() => xulyTaoHoSo(lichkham)}
+                        >
+                          {daCoLanKham ? 'Cập Nhật Lần Khám' : 'Tạo Lần Khám'}
+                        </button>
+                      )
+                    })()}
                   </td>
                 </tr>
               ))

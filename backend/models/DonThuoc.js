@@ -12,7 +12,7 @@ const DonThuoc = sequelize.define('DonThuoc', {
     unique: true,
     allowNull: false
   },
-  HoSoId: {
+  LanKhamId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
@@ -30,3 +30,4 @@ const DonThuoc = sequelize.define('DonThuoc', {
 });
 
 module.exports = DonThuoc;
+

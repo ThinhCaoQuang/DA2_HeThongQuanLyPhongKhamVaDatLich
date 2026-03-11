@@ -28,7 +28,7 @@ export default function BacSi() {
   const [loisuform, setLoiSuform] = useState({})
 
   // Check if user is admin
-  const laAdmin = user?.role === 'QuanTri'
+  const laAdmin = user?.role === 'QuanTri' || user?.role === 'QuanLy'
 
   useEffect(() => {
     layDuLieu()

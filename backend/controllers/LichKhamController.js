@@ -167,9 +167,13 @@ const LichKhamController = {
           where: {
             BacSiId: BacSiId,
             TrangThai: {
-              [Op.in]: ['ChoXacNhan', 'DaXacNhan']
+              [Op.in]: ['ChoXacNhan', 'DaXacNhan', 'DangKham']
             },
             [Op.or]: [
+              {
+                // Cùng giờ bắt đầu (xử lý cả trường hợp ThoiGianKetThuc = NULL)
+                ThoiGianBatDau: thoiGianBD
+              },
               {
                 // Lịch mới bắt đầu trong khoảng lịch cũ
                 ThoiGianBatDau: {
@@ -320,7 +324,7 @@ const LichKhamController = {
       }
 
       const updateData = {
-        TrangThai: 'DaXacNhan',
+        TrangThai: 'DangKham',
         ThoiGianXacNhan: new Date()
       };
       
@@ -493,8 +497,8 @@ const LichKhamController = {
         });
       }
 
-      // Only allow update for appointments not yet confirmed or completed (except QuanTri can edit any)
-      if (req.user.role !== 'QuanTri' && (appointment.TrangThai === 'DaXacNhan' || appointment.TrangThai === 'DaKham')) {
+      // Only allow update for appointments not yet confirmed or completed (except QuanTri/QuanLy can edit any)
+      if (!['QuanTri', 'QuanLy'].includes(req.user.role) && (appointment.TrangThai === 'DaXacNhan' || appointment.TrangThai === 'DaKham')) {
         return res.status(400).json({
           success: false,
           message: 'Không thể sửa lịch khám đã xác nhận hoặc hoàn thành'
@@ -599,10 +603,10 @@ const LichKhamController = {
         });
       }
 
-      if (appointment.TrangThai !== 'DaXacNhan') {
+      if (!['DangKham', 'DaXacNhan'].includes(appointment.TrangThai)) {
         return res.status(400).json({
           success: false,
-          message: 'Chỉ có thể đánh dấu hoàn thành lịch khám đã xác nhận'
+          message: 'Chỉ có thể đánh dấu hoàn thành lịch khám đang được xác nhận hoặc đang khám'
         });
       }
 

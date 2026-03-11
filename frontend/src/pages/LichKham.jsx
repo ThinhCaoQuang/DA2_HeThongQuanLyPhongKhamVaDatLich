@@ -380,6 +380,7 @@ export default function LichKham() {
     const trangthaibando = {
       'ChoXacNhan': { label: 'Chờ xác nhận', color: 'warning' },
       'DaXacNhan': { label: 'Đã xác nhận', color: 'success' },
+      'DangKham': { label: 'Đang khám', color: 'info' },
       'DaKham': { label: 'Đã khám', color: 'success' },
       'DaHuy': { label: 'Đã hủy', color: 'danger' },
     }
@@ -497,7 +498,12 @@ export default function LichKham() {
 
             {/* AI-powered specialty recommendation component - Show for all users */}
             {dulieuform.benhnhanid && (
-              <SpecialtyRecommendation onSelectSpecialty={xulyChonChuyenKhoa} onStatusChange={xulyCapNhatTrangThaiAI} />
+              <SpecialtyRecommendation
+                onSelectSpecialty={xulyChonChuyenKhoa}
+                onStatusChange={xulyCapNhatTrangThaiAI}
+                initialValue={dulieuform.trieuChung}
+                onSymptomsChange={(val) => setDuLieuForm(prev => ({ ...prev, trieuChung: val }))}
+              />
             )}
 
             {/* Show specialty dropdown only for non-LeTan users */}
@@ -589,8 +595,8 @@ export default function LichKham() {
               </div>
             </div>
 
-            {/* Show manual symptom field only if no patient is selected (AI component not active) and AI didn't succeed */}
-            {!dulieuform.benhnhanid && aiStatus !== 'success' && (
+            {/* Show manual symptom field only when no patient is selected yet (AI component not active) */}
+            {!dulieuform.benhnhanid && (
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="trieuChung">Triệu Chứng</label>
@@ -689,7 +695,7 @@ export default function LichKham() {
                     )}
                     {lichkham.TrangThai !== 'ChoXacNhan' && (
                       <>
-                        {lichkham.TrangThai === 'DaXacNhan' && (
+                        {(lichkham.TrangThai === 'DaXacNhan' || lichkham.TrangThai === 'DangKham') && user?.role !== 'LeTan' && (
                           <button
                             className="btn-small btn-primary"
                             onClick={() => xulyTaoHoSo(lichkham.LichKhamId)}

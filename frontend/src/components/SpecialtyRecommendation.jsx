@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import apiClient from '../services/api'
 import '../styles/list.css'
 
-export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusChange }) {
-  const [symptoms, setSymptoms] = useState('')
+export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusChange, initialValue, onSymptomsChange }) {
+  const [symptoms, setSymptoms] = useState(initialValue || '')
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('') // 'analyzing', 'success', 'error'
   const [selectedSpecialty, setSelectedSpecialty] = useState(null)
@@ -74,7 +74,10 @@ export default function SpecialtyRecommendation({ onSelectSpecialty, onStatusCha
             id="symptoms"
             placeholder=""
             value={symptoms}
-            onChange={(e) => setSymptoms(e.target.value)}
+            onChange={(e) => {
+              setSymptoms(e.target.value)
+              onSymptomsChange?.(e.target.value)
+            }}
             style={{
               width: '100%',
               padding: '10px',

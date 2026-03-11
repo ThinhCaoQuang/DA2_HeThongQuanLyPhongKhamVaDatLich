@@ -10,6 +10,7 @@ const BenhNhan = require('./BenhNhan');
 const LichLamViecBacSi = require('./LichLamViecBacSi');
 const LichKham = require('./LichKham');
 const HoSoKhamBenh = require('./HoSoKhamBenh');
+const LanKham = require('./LanKham');
 const DonThuoc = require('./DonThuoc');
 const DonThuocChiTiet = require('./DonThuocChiTiet');
 const ThongBao = require('./ThongBao');
@@ -89,17 +90,18 @@ LichKham.belongsTo(ChuyenKhoa, {
   foreignKey: 'ChuyenKhoaId'
 });
 
-// LichKham -> HoSoKhamBenh (1:1)
-LichKham.hasOne(HoSoKhamBenh, {
+// LichKham -> HoSoKhamBenh: không còn (HoSo không link trực tiếp tới LichKham nữa)
+// LichKham -> LanKham (1:1) — mỗi lịch khám có 1 lần khám
+LichKham.hasOne(LanKham, {
   foreignKey: 'LichKhamId',
-  onDelete: 'CASCADE'
+  onDelete: 'SET NULL'
 });
-HoSoKhamBenh.belongsTo(LichKham, {
+LanKham.belongsTo(LichKham, {
   foreignKey: 'LichKhamId'
 });
 
-// BenhNhan -> HoSoKhamBenh (1:M)
-BenhNhan.hasMany(HoSoKhamBenh, {
+// BenhNhan -> HoSoKhamBenh (1:1) — mỗi bệnh nhân có 1 hồ sơ duy nhất
+BenhNhan.hasOne(HoSoKhamBenh, {
   foreignKey: 'BenhNhanId',
   onDelete: 'CASCADE'
 });
@@ -107,22 +109,31 @@ HoSoKhamBenh.belongsTo(BenhNhan, {
   foreignKey: 'BenhNhanId'
 });
 
-// BacSi -> HoSoKhamBenh (1:M)
-BacSi.hasMany(HoSoKhamBenh, {
-  foreignKey: 'BacSiId',
-  onDelete: 'SET NULL'
-});
-HoSoKhamBenh.belongsTo(BacSi, {
-  foreignKey: 'BacSiId'
-});
-
-// HoSoKhamBenh -> DonThuoc (1:1)
-HoSoKhamBenh.hasOne(DonThuoc, {
+// HoSoKhamBenh -> LanKham (1:M) — nhiều lần khám trong 1 hồ sơ
+HoSoKhamBenh.hasMany(LanKham, {
   foreignKey: 'HoSoId',
   onDelete: 'CASCADE'
 });
-DonThuoc.belongsTo(HoSoKhamBenh, {
+LanKham.belongsTo(HoSoKhamBenh, {
   foreignKey: 'HoSoId'
+});
+
+// BacSi -> LanKham (1:M)
+BacSi.hasMany(LanKham, {
+  foreignKey: 'BacSiId',
+  onDelete: 'SET NULL'
+});
+LanKham.belongsTo(BacSi, {
+  foreignKey: 'BacSiId'
+});
+
+// LanKham -> DonThuoc (1:1) — mỗi lần khám có 1 đơn thuốc
+LanKham.hasOne(DonThuoc, {
+  foreignKey: 'LanKhamId',
+  onDelete: 'CASCADE'
+});
+DonThuoc.belongsTo(LanKham, {
+  foreignKey: 'LanKhamId'
 });
 
 // DonThuoc -> DonThuocChiTiet (1:M)
@@ -182,6 +193,7 @@ module.exports = {
   LichLamViecBacSi,
   LichKham,
   HoSoKhamBenh,
+  LanKham,
   DonThuoc,
   DonThuocChiTiet,
   ThongBao,

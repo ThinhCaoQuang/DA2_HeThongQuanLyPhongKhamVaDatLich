@@ -1,60 +1,56 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const LichKham = sequelize.define('LichKham', {
-  LichKhamId: {
+const LanKham = sequelize.define('LanKham', {
+  LanKhamId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-  MaLichKham: {
+  MaLanKham: {
     type: DataTypes.STRING(20),
     unique: true,
     allowNull: false
   },
-  BenhNhanId: {
+  HoSoId: {
     type: DataTypes.INTEGER,
     allowNull: false
+  },
+  LichKhamId: {
+    type: DataTypes.INTEGER,
+    unique: true,
+    allowNull: true
   },
   BacSiId: {
     type: DataTypes.INTEGER,
     allowNull: true
   },
-  ChuyenKhoaId: {
-    type: DataTypes.INTEGER,
+  TrieuChung: {
+    type: DataTypes.TEXT,
     allowNull: false
   },
-  ThoiGianBatDau: {
-    type: DataTypes.DATE,
+  ChanDoan: {
+    type: DataTypes.TEXT,
     allowNull: false
   },
-  ThoiGianKetThuc: {
-    type: DataTypes.DATE,
-    allowNull: true
-  },
-  TrieuChung: DataTypes.TEXT,
-  TrangThai: {
-    type: DataTypes.ENUM('ChoXacNhan', 'DaXacNhan', 'DangKham', 'DaKham', 'DaHuy'),
-    defaultValue: 'ChoXacNhan'
-  },
-  LyDoHuy: DataTypes.TEXT,
+  KeHoachDieuTri: DataTypes.TEXT,
+  KetLuan: DataTypes.TEXT,
   GhiChu: DataTypes.TEXT,
-  TaoBoi: DataTypes.INTEGER,
-  XacNhanBoi: DataTypes.INTEGER,
-  HuyBoi: DataTypes.INTEGER,
+  NgayKham: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  },
   CreatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   },
-  ThoiGianXacNhan: DataTypes.DATE,
-  ThoiGianHuy: DataTypes.DATE,
   UpdatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   }
 }, {
-  tableName: 'LichKham',
+  tableName: 'LanKham',
   timestamps: false
 });
 
-module.exports = LichKham;
+module.exports = LanKham;

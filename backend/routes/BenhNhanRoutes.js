@@ -6,7 +6,7 @@ const router = express.Router();
 
 // All routes require authentication and LeTan/QuanTri/BacSi role
 router.use(AuthMiddleware.verifyToken);
-router.use(AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'BacSi']));
+router.use(AuthMiddleware.checkRole(['LeTan', 'QuanTri', 'QuanLy', 'BacSi']));
 
 // CRUD operations
 router.get('/', BenhNhanController.getAll);

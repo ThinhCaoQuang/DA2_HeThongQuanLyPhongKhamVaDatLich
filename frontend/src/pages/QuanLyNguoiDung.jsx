@@ -294,6 +294,7 @@ export default function QuanLyNguoiDung() {
         >
           <option value="">Tất cả vai trò</option>
           <option value="QuanTri">Quản trị</option>
+          <option value="QuanLy">Quản lý</option>
           <option value="LeTan">Lễ tân</option>
           <option value="BacSi">Bác sĩ</option>
         </select>
@@ -448,6 +449,7 @@ export default function QuanLyNguoiDung() {
                   disabled={isEdit}
                 >
                   <option value="QuanTri">Quản trị</option>
+                  <option value="QuanLy">Quản lý</option>
                   <option value="LeTan">Lễ tân</option>
                   <option value="BacSi">Bác sĩ</option>
                 </select>
@@ -673,8 +675,8 @@ export default function QuanLyNguoiDung() {
                   <td>{u.TaiKhoanId}</td>
                   <td>{u.NguoiDung?.HoTen || 'N/A'}</td>
                   <td>
-                    <span className={`badge badge-${u.VaiTro === 'QuanTri' ? 'danger' : u.VaiTro === 'BacSi' ? 'success' : 'info'}`}>
-                      {u.VaiTro === 'QuanTri' ? 'Quản trị' : u.VaiTro === 'BacSi' ? 'Bác sĩ' : 'Lễ tân'}
+                    <span className={`badge badge-${u.VaiTro === 'QuanTri' ? 'danger' : u.VaiTro === 'QuanLy' ? 'warning' : u.VaiTro === 'BacSi' ? 'success' : 'info'}`}>
+                      {u.VaiTro === 'QuanTri' ? 'Quản trị' : u.VaiTro === 'QuanLy' ? 'Quản lý' : u.VaiTro === 'BacSi' ? 'Bác sĩ' : 'Lễ tân'}
                     </span>
                   </td>
                   <td>{u.NguoiDung?.DienThoai || '-'}</td>
