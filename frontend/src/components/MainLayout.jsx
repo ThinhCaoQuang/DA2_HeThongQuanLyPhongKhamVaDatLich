@@ -1,5 +1,6 @@
 import Header from './Header'
 import Sidebar from './Sidebar'
+import ChatbotAI from './ChatbotAI'
 import '../styles/layout.css'
 
 export default function MainLayout({ children }) {
@@ -12,6 +13,7 @@ export default function MainLayout({ children }) {
           <div className="page-wrapper">{children}</div>
         </main>
       </div>
+      <ChatbotAI />
     </>
   )
 }
