@@ -4,7 +4,6 @@ import apiClient from '../services/api'
 import { ToastContext } from '../context/ToastContext'
 import { AuthContext } from '../context/AuthContext'
 import { validateLichKham, hasErrors } from '../utils/validation'
-import SpecialtyRecommendation from '../components/SpecialtyRecommendation'
 import '../styles/list.css'
 
 export default function LichKham() {
@@ -23,7 +22,6 @@ export default function LichKham() {
   const [idchinh, setIdChinh] = useState(null)
   const [dangagibacsi, setDangTaiBacSi] = useState(false)
   const [dangathoigian, setDangTaiThoiGian] = useState(false)
-  const [aiStatus, setAiStatus] = useState('') // Track AI recommendation status
   const [dulieuform, setDuLieuForm] = useState({
     benhnhanid: '',
     chuyenkhoanid: '',
@@ -240,9 +238,6 @@ export default function LichKham() {
     // useEffect will automatically load doctors when dulieuform.chuyenkhoanid changes
   }
 
-  const xulyCapNhatTrangThaiAI = (status) => {
-    setAiStatus(status)
-  }
 
   const xulyGuiForm = async (e) => {
     e.preventDefault()
@@ -509,16 +504,6 @@ export default function LichKham() {
                 )}
               </div>
             </div>
-
-            {/* AI-powered specialty recommendation component - Show for all users */}
-            {dulieuform.benhnhanid && (
-              <SpecialtyRecommendation 
-                onSelectSpecialty={xulyChonChuyenKhoa} 
-                onStatusChange={xulyCapNhatTrangThaiAI}
-                symptoms={dulieuform.trieuChung}
-                onSymptomsChange={(value) => setDuLieuForm(prev => ({ ...prev, trieuChung: value }))}
-              />
-            )}
 
             {/* Show specialty dropdown only for non-LeTan users */}
             {user?.role !== 'LeTan' && (

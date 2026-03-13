@@ -18,6 +18,7 @@ const ThongBaoRoutes = require('./routes/ThongBaoRoutes');
 const SpecialtyRecommendationRoutes = require('./routes/SpecialtyRecommendationRoutes');
 const SchedulerRoutes = require('./routes/SchedulerRoutes');
 const UserManagementRoutes = require('./routes/UserManagementRoutes');
+const ChatbotRoutes = require('./routes/ChatbotRoutes');
 const NotificationScheduler = require('./services/NotificationScheduler');
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/thongbao', ThongBaoRoutes);
 app.use('/api/specialty-recommendation', SpecialtyRecommendationRoutes);
 app.use('/api/scheduler', SchedulerRoutes);
 app.use('/api/users', UserManagementRoutes);
+app.use('/api/chatbot', ChatbotRoutes);
 
 // 404 handler
 app.use((req, res) => {
